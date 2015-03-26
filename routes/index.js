@@ -1,15 +1,21 @@
-module.exports = function (app, passport) {
-    app.route('/')
+module.exports = function (app, io, passport) {
+    app.route('/login')
         .get(function (req, res, next) {
-            res.render('index', {title: 'web chat app'});
+            res.render('login', {title: 'web chat app'});
         })
         .post();
 
-    app.route('/profile' )
+    app.route('/' )
         .get(isLoggedIn, function(req, res, next) {
-            res.render('profile.ejs', {
+            console.log('user ***: ', req.user);
+            res.render('../public/build/index', {
                 user : req.user // get the user out of session and pass to template
             });
+        });
+
+    app.route('/me')
+        .get(isLoggedIn, function (req, res, next) {
+            res.send(req.user);
         });
 
     // =====================================
@@ -21,9 +27,26 @@ module.exports = function (app, passport) {
     // handle the callback after facebook has authenticated the user
     app.get('/auth/facebook/callback',
         passport.authenticate('facebook', {
-            successRedirect : '/profile',
-            failureRedirect : '/'
-        }));
+        successRedirect : '/',
+        failureRedirect : '/login'
+    }));
+
+    app.get('/auth/facebook/callback', function (req, res, next) {
+        passport.authenticate('facebook', function(err, user, info) {
+            if (err) {
+                return next(err);
+            }
+            if (!user) {
+                return res.redirect('/');
+            }
+            req.logIn(user, function(err) {
+                if (err) {
+                    return next(err);
+                }
+                return res.send('ok');
+            });
+        })(req, res, next);
+    })
 
     // =====================================
     // LOGOUT ==============================
@@ -42,5 +65,5 @@ function isLoggedIn(req, res, next) {
         return next();
 
     // if they aren't redirect them to the home page
-    res.redirect('/');
+    res.redirect('/login');
 }

@@ -1,0 +1,41 @@
+<style>
+    ul{
+        list-style: none;
+    }
+</style>
+
+<div class="row" ng-controller="HomeCtrl">
+
+    <!-- FACEBOOK INFORMATION -->
+
+    <div class="col-lg-4 col-md-3 col-sm-4">
+        <div class="row">
+            <h3 class="text-primary"><span class="fa fa-facebook"></span> Facebook</h3>
+        </div>
+
+        <div class="row">
+            <ul class="list-group" ng-show="socketIds.length>0">
+                <li ng-repeat="socketId in socketIds" class="list-group-item row">
+                    <a class="col-lg-6 col-md-6" href="#{{socketId}}" ng-click="changeReceiver(socketId)"><img src="http://graph.facebook.com/{{clients[socketId].facebook.id}}/picture?type=square" alt="your avatar"/></a>
+                    <a class="col-lg-6 col-md-6" href="#{{socketId}}" ng-click="changeReceiver(socketId)">{{clients[socketId].facebook.name}}</a>
+                </li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="col-lg-4 col-md-9 col-sm-8">
+        <div class="row">
+            <h3 class="text-primary"><span class="fa fa-facebook"></span> Conversation</h3>
+            <ul id="conversation" class="list-group" ng-show="conversation.length>0">
+                <li ng-repeat="data in conversation" class="list-group-item">{{data.sender.facebook.name}} : {{data.mess}}</li>
+            </ul>
+        </div>
+        <div class="row">
+            <span class="label label-warning" ng-show="warning !== ''">{{warning}}</span> <br/>
+            <input type="text" name="userInput" id="userInput" class="form-input" ng-model="userInput"/>
+            <input type="button" name="button" value="Send" class="btn btn-default" ng-click="sendMessage()"/>
+        </div>
+    </div>
+
+</div>
+
