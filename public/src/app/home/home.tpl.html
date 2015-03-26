@@ -1,6 +1,27 @@
 <style>
+    .row{
+        margin: 0;
+    }
     ul{
         list-style: none;
+    }
+    #conversation{
+        padding: 5px;
+        min-height: 200px;
+        max-height: 250px;
+        width: 100%;
+        background-color: #ffffff;
+        border: 1px solid #dddddd;
+        border-radius: 5px;
+    }
+
+    .selected{
+        background-color: #FAEDB9;
+    }
+
+    .me{
+        margin: 5px 0;
+        background-color: #C5DCEC;
     }
 </style>
 
@@ -8,33 +29,47 @@
 
     <!-- FACEBOOK INFORMATION -->
 
-    <div class="col-lg-4 col-md-3 col-sm-4">
+    <div class="col-lg-4 col-md-4 col-sm-4">
         <div class="row">
             <h3 class="text-primary"><span class="fa fa-facebook"></span> Facebook</h3>
         </div>
 
         <div class="row">
             <ul class="list-group" ng-show="socketIds.length>0">
-                <li ng-repeat="socketId in socketIds" class="list-group-item row">
-                    <a class="col-lg-6 col-md-6" href="#{{socketId}}" ng-click="changeReceiver(socketId)"><img src="http://graph.facebook.com/{{clients[socketId].facebook.id}}/picture?type=square" alt="your avatar"/></a>
-                    <a class="col-lg-6 col-md-6" href="#{{socketId}}" ng-click="changeReceiver(socketId)">{{clients[socketId].facebook.name}}</a>
+                <li ng-repeat="socketId in socketIds" class="list-group-item" ng-class="{me: socketId===mySocketId, selected: socketId===receiver}">
+                    <a class="" href="#{{socketId}}" ng-click="changeReceiver(socketId)"><img src="http://graph.facebook.com/{{clients[socketId].facebook.id}}/picture?type=square" alt="your avatar"/></a>
+                    <a class="" href="#{{socketId}}" ng-click="changeReceiver(socketId)">{{clients[socketId].facebook.name}}</a>
                 </li>
             </ul>
         </div>
     </div>
 
-    <div class="col-lg-4 col-md-9 col-sm-8">
+    <div class="col-lg-8 col-md-8 col-sm-8">
         <div class="row">
-            <h3 class="text-primary"><span class="fa fa-facebook"></span> Conversation</h3>
-            <ul id="conversation" class="list-group" ng-show="conversation.length>0">
-                <li ng-repeat="data in conversation" class="list-group-item">{{data.sender.facebook.name}} : {{data.mess}}</li>
+            <h3 class="text-primary">Conversation</h3>
+            <ul id="conversation" class="list-group">
+                <li ng-repeat="data in conversation" class="list-group-item" ng-class="{me: data.socketId!==mySocketId}">{{data.sender.facebook.name}} : {{data.mess}} </li>
             </ul>
         </div>
-        <div class="row">
-            <span class="label label-warning" ng-show="warning !== ''">{{warning}}</span> <br/>
-            <input type="text" name="userInput" id="userInput" class="form-input" ng-model="userInput"/>
-            <input type="button" name="button" value="Send" class="btn btn-default" ng-click="sendMessage()"/>
-        </div>
+
+        <span class="label label-warning" ng-show="warning !== ''">{{warning}}</span> <br/>
+        <div class="input-group">
+            <input type="text" class="form-control" aria-label="Text input with segmented button dropdown" ng-model="userInput" placeholder="type something here" />
+            <div class="input-group-btn">
+                <button type="button" name="button" value="Send" class="btn btn-default" ng-click="sendMessage()">Send</button>
+                <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
+                    <span class="caret"></span>
+                    <span class="sr-only">Toggle Dropdown</span>
+                </button>
+                <ul class="dropdown-menu dropdown-menu-right" role="menu">
+                    <li><a href="#">Action</a></li>
+                    <li><a href="#">Another action</a></li>
+                    <li><a href="#">Something else here</a></li>
+                    <li class="divider"></li>
+                    <li><a href="#">Separated link</a></li>
+                </ul>
+            </div>
+        </div><!-- /input-group -->
     </div>
 
 </div>

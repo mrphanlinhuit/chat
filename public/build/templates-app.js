@@ -300,8 +300,29 @@ angular.module("chat/chat.tpl.html", []).run(["$templateCache", function($templa
 angular.module("home/home.tpl.html", []).run(["$templateCache", function($templateCache) {
   $templateCache.put("home/home.tpl.html",
     "<style>\n" +
+    "    .row{\n" +
+    "        margin: 0;\n" +
+    "    }\n" +
     "    ul{\n" +
     "        list-style: none;\n" +
+    "    }\n" +
+    "    #conversation{\n" +
+    "        padding: 5px;\n" +
+    "        min-height: 200px;\n" +
+    "        max-height: 250px;\n" +
+    "        width: 100%;\n" +
+    "        background-color: #ffffff;\n" +
+    "        border: 1px solid #dddddd;\n" +
+    "        border-radius: 5px;\n" +
+    "    }\n" +
+    "\n" +
+    "    .selected{\n" +
+    "        background-color: #FAEDB9;\n" +
+    "    }\n" +
+    "\n" +
+    "    .me{\n" +
+    "        margin: 5px 0;\n" +
+    "        background-color: #C5DCEC;\n" +
     "    }\n" +
     "</style>\n" +
     "\n" +
@@ -309,33 +330,47 @@ angular.module("home/home.tpl.html", []).run(["$templateCache", function($templa
     "\n" +
     "    <!-- FACEBOOK INFORMATION -->\n" +
     "\n" +
-    "    <div class=\"col-lg-4 col-md-3 col-sm-4\">\n" +
+    "    <div class=\"col-lg-4 col-md-4 col-sm-4\">\n" +
     "        <div class=\"row\">\n" +
     "            <h3 class=\"text-primary\"><span class=\"fa fa-facebook\"></span> Facebook</h3>\n" +
     "        </div>\n" +
     "\n" +
     "        <div class=\"row\">\n" +
     "            <ul class=\"list-group\" ng-show=\"socketIds.length>0\">\n" +
-    "                <li ng-repeat=\"socketId in socketIds\" class=\"list-group-item row\">\n" +
-    "                    <a class=\"col-lg-6 col-md-6\" href=\"#{{socketId}}\" ng-click=\"changeReceiver(socketId)\"><img src=\"http://graph.facebook.com/{{clients[socketId].facebook.id}}/picture?type=square\" alt=\"your avatar\"/></a>\n" +
-    "                    <a class=\"col-lg-6 col-md-6\" href=\"#{{socketId}}\" ng-click=\"changeReceiver(socketId)\">{{clients[socketId].facebook.name}}</a>\n" +
+    "                <li ng-repeat=\"socketId in socketIds\" class=\"list-group-item\" ng-class=\"{me: socketId===mySocketId, selected: socketId===receiver}\">\n" +
+    "                    <a class=\"\" href=\"#{{socketId}}\" ng-click=\"changeReceiver(socketId)\"><img src=\"http://graph.facebook.com/{{clients[socketId].facebook.id}}/picture?type=square\" alt=\"your avatar\"/></a>\n" +
+    "                    <a class=\"\" href=\"#{{socketId}}\" ng-click=\"changeReceiver(socketId)\">{{clients[socketId].facebook.name}}</a>\n" +
     "                </li>\n" +
     "            </ul>\n" +
     "        </div>\n" +
     "    </div>\n" +
     "\n" +
-    "    <div class=\"col-lg-4 col-md-9 col-sm-8\">\n" +
+    "    <div class=\"col-lg-8 col-md-8 col-sm-8\">\n" +
     "        <div class=\"row\">\n" +
-    "            <h3 class=\"text-primary\"><span class=\"fa fa-facebook\"></span> Conversation</h3>\n" +
-    "            <ul id=\"conversation\" class=\"list-group\" ng-show=\"conversation.length>0\">\n" +
-    "                <li ng-repeat=\"data in conversation\" class=\"list-group-item\">{{data.sender.facebook.name}} : {{data.mess}}</li>\n" +
+    "            <h3 class=\"text-primary\">Conversation</h3>\n" +
+    "            <ul id=\"conversation\" class=\"list-group\">\n" +
+    "                <li ng-repeat=\"data in conversation\" class=\"list-group-item\" ng-class=\"{me: data.socketId!==mySocketId}\">{{data.sender.facebook.name}} : {{data.mess}} </li>\n" +
     "            </ul>\n" +
     "        </div>\n" +
-    "        <div class=\"row\">\n" +
-    "            <span class=\"label label-warning\" ng-show=\"warning !== ''\">{{warning}}</span> <br/>\n" +
-    "            <input type=\"text\" name=\"userInput\" id=\"userInput\" class=\"form-input\" ng-model=\"userInput\"/>\n" +
-    "            <input type=\"button\" name=\"button\" value=\"Send\" class=\"btn btn-default\" ng-click=\"sendMessage()\"/>\n" +
-    "        </div>\n" +
+    "\n" +
+    "        <span class=\"label label-warning\" ng-show=\"warning !== ''\">{{warning}}</span> <br/>\n" +
+    "        <div class=\"input-group\">\n" +
+    "            <input type=\"text\" class=\"form-control\" aria-label=\"Text input with segmented button dropdown\" ng-model=\"userInput\" placeholder=\"type something here\" />\n" +
+    "            <div class=\"input-group-btn\">\n" +
+    "                <button type=\"button\" name=\"button\" value=\"Send\" class=\"btn btn-default\" ng-click=\"sendMessage()\">Send</button>\n" +
+    "                <button type=\"button\" class=\"btn btn-default dropdown-toggle\" data-toggle=\"dropdown\" aria-expanded=\"false\">\n" +
+    "                    <span class=\"caret\"></span>\n" +
+    "                    <span class=\"sr-only\">Toggle Dropdown</span>\n" +
+    "                </button>\n" +
+    "                <ul class=\"dropdown-menu dropdown-menu-right\" role=\"menu\">\n" +
+    "                    <li><a href=\"#\">Action</a></li>\n" +
+    "                    <li><a href=\"#\">Another action</a></li>\n" +
+    "                    <li><a href=\"#\">Something else here</a></li>\n" +
+    "                    <li class=\"divider\"></li>\n" +
+    "                    <li><a href=\"#\">Separated link</a></li>\n" +
+    "                </ul>\n" +
+    "            </div>\n" +
+    "        </div><!-- /input-group -->\n" +
     "    </div>\n" +
     "\n" +
     "</div>\n" +

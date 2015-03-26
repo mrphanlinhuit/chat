@@ -46,7 +46,7 @@ angular.module( 'chat.home', [
         $scope.conversation = [];
         $scope.warning = '';
         $scope.profile= '';
-        var mySocketId = '';
+        $scope.mySocketId = '';
 
 
         //get own user profile
@@ -57,7 +57,7 @@ angular.module( 'chat.home', [
 
                 socketConnector.sendMessage('greeting', data);
                 socketConnector.sendMessage('getListClients');
-                mySocketId = socketConnector.socket.id;
+                $scope.mySocketId = socketConnector.socket.id;
             })
             .error();
 
@@ -104,8 +104,8 @@ angular.module( 'chat.home', [
             if($scope.receiver !== ''){
                 var socketId =  $scope.receiver;
                 var mess = $scope.userInput;
-                if(mySocketId!== ''){
-                    if( mySocketId !== socketId){
+                if($scope.mySocketId!== ''){
+                    if( $scope.mySocketId !== socketId){
                         $scope.userInput = '';
                         socketConnector.sendMessage('privateMessage', {
                             socketId: socketId,
