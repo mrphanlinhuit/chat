@@ -2,17 +2,53 @@
     .row{
         margin: 0;
     }
+
+    #chat{
+        min-height: 300px;
+        max-height: 300px;
+    }
     ul{
         list-style: none;
     }
     #conversation{
         padding: 5px;
-        min-height: 200px;
-        max-height: 250px;
+        min-height: 350px;
+        max-height: 500px;
         width: 100%;
         background-color: #ffffff;
         border: 1px solid #dddddd;
         border-radius: 5px;
+        overflow-y: scroll;
+        word-break: normal;
+    }
+
+    .list-group-item{
+        border: none;
+    }
+    .conversation-client-name {
+        font-size: .7em;
+    }
+
+    .conversation-item{
+
+    }
+
+    .item-list-client{
+        position: relative;
+    }
+
+    .bubble-message{
+        border: #000000;
+        border-radius: 10px;
+        background-color: rgb(173, 102, 33);
+        min-width: 23px;
+        display: block;
+        max-width: 30px;
+        text-align: center;
+        position: absolute;
+        top: 5px;
+        right: 10px;
+
     }
 
     .selected{
@@ -23,9 +59,26 @@
         margin: 5px 0;
         background-color: #C5DCEC;
     }
+    .myConversion{
+        margin: 5px 0 5px 25px;
+        background-color: #D6E2F2;
+        border-radius: 5px;
+        padding: 10px;
+    }
+
+    .otherConversation{
+        background-color: #72BAF7;
+        border-radius: 5px;
+        padding: 10px;
+    }
+
+    #chatbox{
+        margin-bottom: 20px;
+    }
+
 </style>
 
-<div class="row" ng-controller="HomeCtrl">
+<div class="row" id="chat">
 
     <!-- FACEBOOK INFORMATION -->
 
@@ -36,25 +89,41 @@
 
         <div class="row">
             <ul class="list-group" ng-show="socketIds.length>0">
-                <li ng-repeat="socketId in socketIds" class="list-group-item" ng-class="{me: socketId===mySocketId, selected: socketId===receiver}">
-                    <a class="" href="#{{socketId}}" ng-click="changeReceiver(socketId)"><img src="http://graph.facebook.com/{{clients[socketId].facebook.id}}/picture?type=square" alt="your avatar"/></a>
-                    <a class="" href="#{{socketId}}" ng-click="changeReceiver(socketId)">{{clients[socketId].facebook.name}}</a>
+                <li class="list-group-item item-list-client me">
+                    <a><img src="http://graph.facebook.com/{{profile.facebook.id}}/picture?type=square" alt="your avatar"/></a>
+                    <a class="" href="#{{mySocketId}}">{{profile.facebook.name}}</a>
+                </li>
+
+                <li ng-repeat="socketId in socketIds" class="list-group-item item-list-client" ng-if="socketId!==mySocketId" ng-class="{selected: socketId===selectedClient}" ng-click="changeSelectedClient(socketId)">
+                    <a class="" href="#{{socketId}}" ng-click="changeSelectedClient(socketId)"><img src="http://graph.facebook.com/{{clients[socketId].facebook.id}}/picture?type=square" alt="your avatar"/></a>
+                    <a class="" href="#{{socketId}}" ng-click="changeSelectedClient(socketId)">{{clients[socketId].facebook.name}}</a>
+                    <span class="bubble-message" ng-show="clients[socketId].newMess > 0">{{clients[socketId].newMess}}</span>
                 </li>
             </ul>
         </div>
     </div>
 
-    <div class="col-lg-8 col-md-8 col-sm-8">
+    <div class="col-lg-8 col-md-8 col-sm-8" id="chatbox">
         <div class="row">
-            <h3 class="text-primary">Conversation</h3>
-            <ul id="conversation" class="list-group">
-                <li ng-repeat="data in conversation" class="list-group-item" ng-class="{me: data.socketId!==mySocketId}">{{data.sender.facebook.name}} : {{data.mess}} </li>
+
+            <ul id="conversation" class="list-group" scroll-glue>
+                <li ng-repeat="data in mainConversation" class="list-group-item">
+                    <div class="media">
+                        <div class="media-left">
+                            <a ng-if="data.senderId"><img src="http://graph.facebook.com/{{data.sender.facebook.id}}/picture?type=square" alt="your avatar"/></a>
+                        </div>
+                        <div class="media-body">
+                            <h4 class="media-heading" ng-if="data.senderId" class="conversation-client-name">{{data.sender.facebook.name}}<a class="anchorjs-link" href="#media-heading"><span class="anchorjs-icon"></span></a></h4>
+                            <div ng-class="{myConversion:!data.senderId, otherConversation: data.senderId}">{{data.message}}</div>
+                        </div>
+                    </div>
+                </li>
             </ul>
         </div>
 
         <span class="label label-warning" ng-show="warning !== ''">{{warning}}</span> <br/>
         <div class="input-group">
-            <input type="text" class="form-control" aria-label="Text input with segmented button dropdown" ng-model="userInput" placeholder="type something here" />
+            <input type="text" class="form-control" aria-label="Text input with segmented button dropdown" ng-model="userInput" ng-keydown="onKeyDown($event)" placeholder="type something here" />
             <div class="input-group-btn">
                 <button type="button" name="button" value="Send" class="btn btn-default" ng-click="sendMessage()">Send</button>
                 <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-expanded="false">

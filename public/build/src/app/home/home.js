@@ -39,11 +39,11 @@ angular.module( 'chat.home', [
  * And of course we define a controller for our route.
  */
 .controller( 'HomeCtrl', [ '$scope', 'socketConnector', '$http', function( $scope , socketConnector, $http) {
-        $scope.socketIds = [];
-        $scope.clients = {};
-        $scope.receiver ='';//the receiver
+        $scope.socketIds = [];//list all socketId
+        $scope.clients = {};//
+        $scope.selectedClient ='';//the receiver
         $scope.userInput = '';
-        $scope.conversation = [];
+        $scope.mainConversation = [];
         $scope.warning = '';
         $scope.profile= '';
         $scope.mySocketId = '';
@@ -62,7 +62,7 @@ angular.module( 'chat.home', [
             .error();
 
 
-        socketConnector.connect('http://localhost:3000/');
+        socketConnector.connect('http://localhost:8000/');
 
         socketConnector.listen('greeting', function (data) {
             console.log('receive message from server: ', data);
@@ -74,8 +74,30 @@ angular.module( 'chat.home', [
 
         //send a message to a special client
         socketConnector.listen('privateMessage', function (data) {
-            $scope.conversation.push(data);
+
+            if(!$scope.clients[data.senderId].conversation){
+                $scope.clients[data.senderId].conversation = [];
+            }
+
+            $scope.clients[data.senderId].conversation.push(data);
+
+            console.log('$scope.selectedClient:  ', $scope.selectedClient);
+            console.log('data.socketId:  ', data.socketId);
+
+            if( $scope.selectedClient === data.senderId){//if the message was sent from selected client then show the the conversation
+                $scope.mainConversation = $scope.clients[data.senderId].conversation;
+            }else{
+                if(!$scope.clients[data.senderId].newMess){//show message bubble if sender was selected
+                    $scope.clients[data.senderId].newMess = 1;
+                }else{
+                    $scope.clients[data.senderId].newMess ++;
+                }
+            }
+
             console.log('private message: ', data);
+            console.log('$scope.clients[data.socketId].conversation: ', $scope.clients[data.senderId].conversation);
+            console.log('$scope.mainConversation: ', $scope.mainConversation);
+
             $scope.$apply();
         });
 
@@ -85,37 +107,78 @@ angular.module( 'chat.home', [
             $scope.socketIds = data.socketIds;
             $scope.clients = data.clients;
             $scope.$apply();
-            console.log('list client has changed: ', $scope.socketIds);
+            console.log('list socketIds has changed: ', $scope.socketIds);
             console.log('list client has changed: ', $scope.clients);
         });
 
+        //get the old message from server
+        //socketConnector.listen('oldMessage', function (data) {
+        //    if($scope.clients[$scope.selectedClient].facebook.id === data.receiver){//if the selected client is the receiver then show the message
+        //        for(var i=0; i<data.length; i++){
+        //            var tamp = {};
+        //            tamp.facebook = {};
+        //            tamp.facebook.id = data[i].facebookSenderId;
+        //            tamp.senderId = $scope.mySocketId;
+        //            tamp.sender = $scope.profile;
+        //            tamp.message = data[i].message;
+        //            data[i] = tamp;
+        //        }
+        //
+        //        $scope.mainConversation = data;
+        //        console.log('the old messages: ', data);
+        //    }
+        //});
+
 
         //change selected client to send message
-        $scope.changeReceiver = function (socketId) {
+        $scope.changeSelectedClient = function (socketId) {
+            if(socketId === $scope.mySocketId){
+                return;
+            }
             $scope.warning = '';
-            $scope.receiver = socketId;
-            console.log('change destination: ', socketId);
+            $scope.selectedClient = socketId;
+
+            if(!$scope.clients[socketId].conversation){
+                $scope.clients[socketId].conversation = [];
+            }
+
+            $scope.mainConversation = $scope.clients[socketId].conversation;
+            $scope.clients[socketId].newMess = 0;
+            console.log('change destination: ', $scope.selectedClient);
+
+            socketConnector.sendMessage('getOldMessage', {
+                sender: $scope.profile.facebook.id,
+                receiver: $scope.clients[socketId].facebook.id
+            });
         };
 
 
         //send message
         $scope.sendMessage = function () {
             $scope.warning = '';
-            if($scope.receiver !== ''){
-                var socketId =  $scope.receiver;
+            if($scope.selectedClient !== ''){
+                var socketId =  $scope.selectedClient;
                 var mess = $scope.userInput;
+                if(mess === ''){
+                    $scope.warning = 'the message is empty!';
+                    return false;
+                }
+
                 if($scope.mySocketId!== ''){
                     if( $scope.mySocketId !== socketId){
                         $scope.userInput = '';
                         socketConnector.sendMessage('privateMessage', {
-                            socketId: socketId,
-                            mess: mess
+                            receiverId: socketId,
+                            message: mess
                         });
-                        $scope.conversation.push({
-                            socketId: socketId,
-                            mess: mess,
-                            sender: $scope.profile
-                        });
+
+                        if(!$scope.clients[socketId].conversation){
+                            $scope.clients[socketId].conversation = [];
+                        }
+                        $scope.clients[socketId].conversation.push({receiverId: socketId, message: mess, sender: $scope.profile});
+
+                        $scope.mainConversation =  $scope.clients[socketId].conversation;
+
                     }else // you has sent the message to yourself
                     {
                         $scope.warning = 'you can\'t send the message to yourself';
@@ -130,4 +193,16 @@ angular.module( 'chat.home', [
             }
         };
 
+        //
+        $scope.onKeyDown = function ($event) {
+            switch ($event.keyCode){
+                case 13:
+                    $scope.sendMessage();
+                    break;
+
+                default :
+                    console.log('the key is undefined', $event.keyCode);
+                    break;
+            }
+        };
 }]);

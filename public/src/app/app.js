@@ -3,7 +3,8 @@ angular.module( 'chat', [
   'templates-common',
   'chat.home',
   'chat.about',
-  'ui.router'
+  'ui.router',
+    'luegg.directives'
 ])
 
 .config( function myAppConfig ( $stateProvider, $urlRouterProvider ) {
