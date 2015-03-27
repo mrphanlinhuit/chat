@@ -44,7 +44,7 @@ module.exports = function (io, passport) {
                 sender: socket.user
             });
             var sender = socket;
-            storeMessage(sender, data);
+            //storeMessage(sender, data);
         });
 
         socket.on('getOldMessage', function (data) {
@@ -61,7 +61,7 @@ module.exports = function (io, passport) {
 
 
         socket.on('disconnect', function(){
-            listSocketId = getListSocketId(namespace, namespace);//refresh clients list
+            listSocketId = getListSocketId(namespace, roomName);//refresh clients list
             io.to(roomName).emit('listClients', {socketIds: listSocketId, clients: clients});
             console.log('user disconnected: ', socket);
         });
