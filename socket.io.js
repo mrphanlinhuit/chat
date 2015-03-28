@@ -5,10 +5,10 @@
 //load the things we need
 var messModel = require('./models/message');
 
-var listSocketId = [];
+var socketIds = [];
 var namespace = '/';
 var roomName = 'chatRoom';
-var clients = {};//user's facebook profile
+var usersInfo = {};//user's facebook profile
 var limitMessPerOneLoad = 20;
 
 module.exports = function (io, passport) {
@@ -17,7 +17,7 @@ module.exports = function (io, passport) {
     io.on('connection', function(socket){
         console.log('a user connected: ', socket.id);
         socket.join(roomName);
-        listSocketId = getListSocketId(namespace, roomName);//update clients list
+        socketIds = getListSocketId(namespace, roomName);//update clients list
 
         socket.emit('greeting', 'welcome to web chat');
 
@@ -25,14 +25,14 @@ module.exports = function (io, passport) {
             if(!socket.user){
                 data.socketId = socket.id;
                 socket.user = data;
-                clients[socket.id] = data; //store user's facebook profile
+                usersInfo[socket.id] = data; //store user's facebook profile
                 //console.log('greateing: ', clients);
             }
             console.log('data from client: ', socket.user);
         });
 
         socket.on('getListClients', function (data) {
-            io.to(roomName).emit('listClients', {socketIds: listSocketId, clients: clients});
+            io.to(roomName).emit('listClients', {socketIds: socketIds, usersInfo: usersInfo});
         });
 
         socket.on('privateMessage', function (data) {
@@ -43,53 +43,49 @@ module.exports = function (io, passport) {
                 message: data.message,
                 sender: socket.user
             });
-            var sender = socket;
-            //storeMessage(sender, data);
+            var fbSender = socket.user.facebook.id;
+            var fbReceiver = usersInfo[data.receiverId].facebook.id;
+            storeMessage(fbSender, fbReceiver, data.message);
         });
 
-        socket.on('getOldMessage', function (data) {
-            retrieveMessage(data.sender, data.receiver, function (err, data) {
+        socket.on('requestOldMessages', function (data) {
+            retrieveMessage(data.myFbId, data.receiverFbId, function (err, data) {
                 if(err){
                     console.log('there was an err when the server was trying to fetch data from DB server');
                     return ;
                 }
                 console.log('old messages: ', data);
-                socket.emit('oldMessage', data);
+                socket.emit('retrieveMessages', data);
             });
         });
 
 
 
         socket.on('disconnect', function(){
-            listSocketId = getListSocketId(namespace, roomName);//refresh clients list
-            io.to(roomName).emit('listClients', {socketIds: listSocketId, clients: clients});
-            console.log('user disconnected: ', socket);
+            socketIds = getListSocketId(namespace, roomName);//refresh clients list
+            io.to(roomName).emit('listClients', {socketIds: socketIds, usersInfo: usersInfo});
+            console.log('user disconnected: ', socket.user);
         });
     });
 
     //get all clients in the room
     function getListSocketId(namespace, roomName) {
-        var listSocketId = [];
+        var socketIds = [];
         for (var socketId in io.nsps[namespace].adapter.rooms[roomName]) {
-            listSocketId.push(socketId);
+            socketIds.push(socketId);
         }
-        return listSocketId;
+        return socketIds;
     }
 }
 
 //==
-var storeMessage = function (sender, data) {
-    //var newMess = messModel();
-    //newMess.sender.facebook.id = 'linh';
-    //newMess.sender.facebook.name = 'linh';
-    //newMess.sender.facebook.email = 'linh';
-    //
-    //newMess.receiver.facebook.id =  clients[data.receiverId].user.facebook.id;
-    //newMess.receiver.facebook.name = clients[data.receiverId].user.facebook.name;
-    //newMess.receiver.facebook.email = clients[data.receiverId].user.facebook.email;
+var storeMessage = function (fbSender, fbReceiver, mess) {
+    var newMess = messModel();
+    newMess.sender = fbSender;
+    newMess.receiver = fbReceiver;
 
 
-    newMess.message = data.message;
+    newMess.message = mess;
     newMess.meta.time = new Date();
 
     newMess.save(function (err, data) {
@@ -109,5 +105,4 @@ var retrieveMessage = function (sender, receiver, cb) {
         .exec(function (err, data) {
             cb(err, data);
         });
-}
-
+};

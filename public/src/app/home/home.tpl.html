@@ -90,14 +90,14 @@
         <div class="row">
             <ul class="list-group" ng-show="socketIds.length>0">
                 <li class="list-group-item item-list-client me">
-                    <a><img src="http://graph.facebook.com/{{profile.facebook.id}}/picture?type=square" alt="your avatar"/></a>
-                    <a class="" href="#{{mySocketId}}">{{profile.facebook.name}}</a>
+                    <a><img src="http://graph.facebook.com/{{myProfile.facebook.id}}/picture?type=square" alt="your avatar"/></a>
+                    <a class="" href="#{{mySocketId}}">{{myProfile.facebook.name}}</a>
                 </li>
 
                 <li ng-repeat="socketId in socketIds" class="list-group-item item-list-client" ng-if="socketId!==mySocketId" ng-class="{selected: socketId===selectedClient}" ng-click="changeSelectedClient(socketId)">
-                    <a class="" href="#{{socketId}}" ng-click="changeSelectedClient(socketId)"><img src="http://graph.facebook.com/{{clients[socketId].facebook.id}}/picture?type=square" alt="your avatar"/></a>
-                    <a class="" href="#{{socketId}}" ng-click="changeSelectedClient(socketId)">{{clients[socketId].facebook.name}}</a>
-                    <span class="bubble-message" ng-show="clients[socketId].newMess > 0">{{clients[socketId].newMess}}</span>
+                    <a class="" href="#{{socketId}}" ng-click="changeSelectedClient(socketId)"><img src="http://graph.facebook.com/{{usersInfo[socketId].facebook.id}}/picture?type=square" alt="your avatar"/></a>
+                    <a class="" href="#{{socketId}}" ng-click="changeSelectedClient(socketId)">{{usersInfo[socketId].facebook.name}}</a>
+                    <span class="bubble-message" ng-show="usersInfo[socketId].newMess > 0">{{usersInfo[socketId].newMess}}</span>
                 </li>
             </ul>
         </div>
@@ -110,11 +110,11 @@
                 <li ng-repeat="data in mainConversation" class="list-group-item">
                     <div class="media">
                         <div class="media-left">
-                            <a ng-if="data.senderId"><img src="http://graph.facebook.com/{{data.sender.facebook.id}}/picture?type=square" alt="your avatar"/></a>
+                            <a ng-if="data.senderId"><img src="http://graph.facebook.com/{{usersInfo[selectedClient].facebook.id}}/picture?type=square" alt="your avatar"/></a>
                         </div>
                         <div class="media-body">
-                            <h4 class="media-heading" ng-if="data.senderId" class="conversation-client-name">{{data.sender.facebook.name}}<a class="anchorjs-link" href="#media-heading"><span class="anchorjs-icon"></span></a></h4>
-                            <div ng-class="{myConversion:!data.senderId, otherConversation: data.senderId}">{{data.message}}</div>
+                            <h4 class="media-heading" ng-if="!data.me" class="conversation-client-name">{{usersInfo[selectedClient].facebook.name}}<a class="anchorjs-link" href="#media-heading"><span class="anchorjs-icon"></span></a></h4>
+                            <div ng-class="{myConversion: data.me, otherConversation: !data.me}">{{data.message}}</div>
                         </div>
                     </div>
                 </li>

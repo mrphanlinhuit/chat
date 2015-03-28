@@ -5,20 +5,8 @@
 var mongoose = require('mongoose');
 
 var messageSchema = mongoose.Schema({
-    sender:{
-        facebook:{
-            id: String,
-            name: String,
-            email: String
-        }
-    },
-    receiver:{
-        facebook:{
-            id: String,
-            name: String,
-            email: String
-        }
-    },
+    sender: String,
+    receiver: String,
     message: String,
     meta: {
         time: Date

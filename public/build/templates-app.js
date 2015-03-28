@@ -391,14 +391,14 @@ angular.module("home/home.tpl.html", []).run(["$templateCache", function($templa
     "        <div class=\"row\">\n" +
     "            <ul class=\"list-group\" ng-show=\"socketIds.length>0\">\n" +
     "                <li class=\"list-group-item item-list-client me\">\n" +
-    "                    <a><img src=\"http://graph.facebook.com/{{profile.facebook.id}}/picture?type=square\" alt=\"your avatar\"/></a>\n" +
-    "                    <a class=\"\" href=\"#{{mySocketId}}\">{{profile.facebook.name}}</a>\n" +
+    "                    <a><img src=\"http://graph.facebook.com/{{myProfile.facebook.id}}/picture?type=square\" alt=\"your avatar\"/></a>\n" +
+    "                    <a class=\"\" href=\"#{{mySocketId}}\">{{myProfile.facebook.name}}</a>\n" +
     "                </li>\n" +
     "\n" +
     "                <li ng-repeat=\"socketId in socketIds\" class=\"list-group-item item-list-client\" ng-if=\"socketId!==mySocketId\" ng-class=\"{selected: socketId===selectedClient}\" ng-click=\"changeSelectedClient(socketId)\">\n" +
-    "                    <a class=\"\" href=\"#{{socketId}}\" ng-click=\"changeSelectedClient(socketId)\"><img src=\"http://graph.facebook.com/{{clients[socketId].facebook.id}}/picture?type=square\" alt=\"your avatar\"/></a>\n" +
-    "                    <a class=\"\" href=\"#{{socketId}}\" ng-click=\"changeSelectedClient(socketId)\">{{clients[socketId].facebook.name}}</a>\n" +
-    "                    <span class=\"bubble-message\" ng-show=\"clients[socketId].newMess > 0\">{{clients[socketId].newMess}}</span>\n" +
+    "                    <a class=\"\" href=\"#{{socketId}}\" ng-click=\"changeSelectedClient(socketId)\"><img src=\"http://graph.facebook.com/{{usersInfo[socketId].facebook.id}}/picture?type=square\" alt=\"your avatar\"/></a>\n" +
+    "                    <a class=\"\" href=\"#{{socketId}}\" ng-click=\"changeSelectedClient(socketId)\">{{usersInfo[socketId].facebook.name}}</a>\n" +
+    "                    <span class=\"bubble-message\" ng-show=\"usersInfo[socketId].newMess > 0\">{{usersInfo[socketId].newMess}}</span>\n" +
     "                </li>\n" +
     "            </ul>\n" +
     "        </div>\n" +
@@ -411,11 +411,11 @@ angular.module("home/home.tpl.html", []).run(["$templateCache", function($templa
     "                <li ng-repeat=\"data in mainConversation\" class=\"list-group-item\">\n" +
     "                    <div class=\"media\">\n" +
     "                        <div class=\"media-left\">\n" +
-    "                            <a ng-if=\"data.senderId\"><img src=\"http://graph.facebook.com/{{data.sender.facebook.id}}/picture?type=square\" alt=\"your avatar\"/></a>\n" +
+    "                            <a ng-if=\"data.senderId\"><img src=\"http://graph.facebook.com/{{usersInfo[selectedClient].facebook.id}}/picture?type=square\" alt=\"your avatar\"/></a>\n" +
     "                        </div>\n" +
     "                        <div class=\"media-body\">\n" +
-    "                            <h4 class=\"media-heading\" ng-if=\"data.senderId\" class=\"conversation-client-name\">{{data.sender.facebook.name}}<a class=\"anchorjs-link\" href=\"#media-heading\"><span class=\"anchorjs-icon\"></span></a></h4>\n" +
-    "                            <div ng-class=\"{myConversion:!data.senderId, otherConversation: data.senderId}\">{{data.message}}</div>\n" +
+    "                            <h4 class=\"media-heading\" ng-if=\"!data.me\" class=\"conversation-client-name\">{{usersInfo[selectedClient].facebook.name}}<a class=\"anchorjs-link\" href=\"#media-heading\"><span class=\"anchorjs-icon\"></span></a></h4>\n" +
+    "                            <div ng-class=\"{myConversion: data.me, otherConversation: !data.me}\">{{data.message}}</div>\n" +
     "                        </div>\n" +
     "                    </div>\n" +
     "                </li>\n" +

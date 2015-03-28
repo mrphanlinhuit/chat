@@ -23,6 +23,9 @@ module.exports = function (passport) {
         done(null, user);
     });
 
+    console.log('configAuth.facebookAuth.clientID,', configAuth.facebookAuth.clientID);
+
+
     // =========================================================================
     // FACEBOOK ================================================================
     // =========================================================================
