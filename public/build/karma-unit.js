@@ -14,7 +14,9 @@ module.exports = function ( karma ) {
       'vendor/angular-bootstrap/ui-bootstrap-tpls.min.js',
       'vendor/placeholders/angular-placeholders-0.0.1-SNAPSHOT.min.js',
       'vendor/angular-ui-router/release/angular-ui-router.js',
+      'vendor/angular-animate/angular-animate.js',
       'vendor/angular-scroll-glue/src/scrollglue.js',
+      'vendor/angular-toastr/dist/angular-toastr.tpls.js',
       'build/templates-app.js',
       'build/templates-common.js',
       'vendor/angular-mocks/angular-mocks.js',
@@ -26,7 +28,7 @@ module.exports = function ( karma ) {
       'src/assets/**/*.js'
     ],
     frameworks: [ 'jasmine' ],
-    plugins: [ 'karma-jasmine', 'karma-firefox-launcher', 'karma-coffee-preprocessor' ],
+    plugins: [ 'karma-jasmine','karma-chrome-launcher', 'karma-firefox-launcher', 'karma-coffee-preprocessor' ],
     preprocessors: {
       '**/*.coffee': 'coffee',
     },
@@ -63,7 +65,8 @@ module.exports = function ( karma ) {
      * the aesthetic advantage of not launching a browser every time you save.
      */
     browsers: [
-      'Firefox'
+        //'Chrome',
+        'Firefox'
     ]
   });
 };

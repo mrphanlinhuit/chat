@@ -4,8 +4,8 @@
     }
 
     #chat{
-        min-height: 300px;
-        max-height: 300px;
+        min-height: 500px;
+        max-height: 500px;
     }
     ul{
         list-style: none;
@@ -76,6 +76,16 @@
         margin-bottom: 20px;
     }
 
+    @media (max-width: 766px){
+        #chat{
+            min-height: 600px;
+            max-height: 600px;
+        }
+        #conversation{
+            min-height: 250px;
+            max-height: 250px;
+        }
+    }
 </style>
 
 <div class="row" id="chat">
@@ -94,15 +104,16 @@
                     <a class="" href="#{{mySocketId}}">{{myProfile.facebook.name}}</a>
                 </li>
 
-                <li ng-repeat="socketId in socketIds" class="list-group-item item-list-client" ng-if="socketId!==mySocketId" ng-class="{selected: socketId===selectedClient}" ng-click="changeSelectedClient(socketId)">
-                    <a class="" href="#{{socketId}}" ng-click="changeSelectedClient(socketId)"><img src="http://graph.facebook.com/{{usersInfo[socketId].facebook.id}}/picture?type=square" alt="your avatar"/></a>
-                    <a class="" href="#{{socketId}}" ng-click="changeSelectedClient(socketId)">{{usersInfo[socketId].facebook.name}}</a>
+                <li ng-repeat="socketId in socketIds" class="list-group-item item-list-client" ng-if="socketId!==mySocketId" ng-class="{selected: socketId===selectedSocketId}" ng-click="changeSelectedSocketid(socketId)">
+                    <a class="" href="#{{socketId}}" ng-click="changeSelectedSocketid(socketId)"><img src="http://graph.facebook.com/{{usersInfo[socketId].facebook.id}}/picture?type=square" alt="your avatar"/></a>
+                    <a class="" href="#{{socketId}}" ng-click="changeSelectedSocketid(socketId)">{{usersInfo[socketId].facebook.name}}</a>
                     <span class="bubble-message" ng-show="usersInfo[socketId].newMess > 0">{{usersInfo[socketId].newMess}}</span>
                 </li>
             </ul>
         </div>
     </div>
 
+    <!--chat box-->
     <div class="col-lg-8 col-md-8 col-sm-8" id="chatbox">
         <div class="row">
 
@@ -110,10 +121,10 @@
                 <li ng-repeat="data in mainConversation" class="list-group-item">
                     <div class="media">
                         <div class="media-left">
-                            <a ng-if="data.senderId"><img src="http://graph.facebook.com/{{usersInfo[selectedClient].facebook.id}}/picture?type=square" alt="your avatar"/></a>
+                            <a ng-if="!data.me"><img src="http://graph.facebook.com/{{selectedClientProfile.facebook.id}}/picture?type=square" alt="your avatar"/></a>
                         </div>
                         <div class="media-body">
-                            <h4 class="media-heading" ng-if="!data.me" class="conversation-client-name">{{usersInfo[selectedClient].facebook.name}}<a class="anchorjs-link" href="#media-heading"><span class="anchorjs-icon"></span></a></h4>
+                            <h4 class="media-heading" ng-if="!data.me" class="conversation-client-name">{{usersInfo[selectedSocketId].facebook.name}}<a class="anchorjs-link" href="#media-heading"><span class="anchorjs-icon"></span></a></h4>
                             <div ng-class="{myConversion: data.me, otherConversation: !data.me}">{{data.message}}</div>
                         </div>
                     </div>
@@ -123,10 +134,10 @@
 
         <span class="label label-warning" ng-show="warning !== ''">{{warning}}</span> <br/>
         <div class="input-group">
-            <input type="text" class="form-control" aria-label="Text input with segmented button dropdown" ng-model="userInput" ng-keydown="onKeyDown($event)" placeholder="type something here" />
+            <input type="text" class="form-control" aria-label="Text input with segmented button dropdown" ng-model="userInput" ng-disabled="disabledButtonSend" ng-keydown="onKeyDown($event)" placeholder="type something here" />
             <div class="input-group-btn">
-                <button type="button" name="button" value="Send" class="btn btn-default" ng-click="sendMessage()">Send</button>
-                <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
+                <button type="button" name="button" value="Send" class="btn btn-default" ng-disabled="disabledButtonSend" ng-click="sendMessage()">Send</button>
+                <button type="button" class="btn btn-default dropdown-toggle" ng-disabled="disabledButtonSend" data-toggle="dropdown" aria-expanded="false">
                     <span class="caret"></span>
                     <span class="sr-only">Toggle Dropdown</span>
                 </button>

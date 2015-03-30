@@ -305,8 +305,8 @@ angular.module("home/home.tpl.html", []).run(["$templateCache", function($templa
     "    }\n" +
     "\n" +
     "    #chat{\n" +
-    "        min-height: 300px;\n" +
-    "        max-height: 300px;\n" +
+    "        min-height: 500px;\n" +
+    "        max-height: 500px;\n" +
     "    }\n" +
     "    ul{\n" +
     "        list-style: none;\n" +
@@ -377,6 +377,16 @@ angular.module("home/home.tpl.html", []).run(["$templateCache", function($templa
     "        margin-bottom: 20px;\n" +
     "    }\n" +
     "\n" +
+    "    @media (max-width: 766px){\n" +
+    "        #chat{\n" +
+    "            min-height: 600px;\n" +
+    "            max-height: 600px;\n" +
+    "        }\n" +
+    "        #conversation{\n" +
+    "            min-height: 250px;\n" +
+    "            max-height: 250px;\n" +
+    "        }\n" +
+    "    }\n" +
     "</style>\n" +
     "\n" +
     "<div class=\"row\" id=\"chat\">\n" +
@@ -395,15 +405,16 @@ angular.module("home/home.tpl.html", []).run(["$templateCache", function($templa
     "                    <a class=\"\" href=\"#{{mySocketId}}\">{{myProfile.facebook.name}}</a>\n" +
     "                </li>\n" +
     "\n" +
-    "                <li ng-repeat=\"socketId in socketIds\" class=\"list-group-item item-list-client\" ng-if=\"socketId!==mySocketId\" ng-class=\"{selected: socketId===selectedClient}\" ng-click=\"changeSelectedClient(socketId)\">\n" +
-    "                    <a class=\"\" href=\"#{{socketId}}\" ng-click=\"changeSelectedClient(socketId)\"><img src=\"http://graph.facebook.com/{{usersInfo[socketId].facebook.id}}/picture?type=square\" alt=\"your avatar\"/></a>\n" +
-    "                    <a class=\"\" href=\"#{{socketId}}\" ng-click=\"changeSelectedClient(socketId)\">{{usersInfo[socketId].facebook.name}}</a>\n" +
+    "                <li ng-repeat=\"socketId in socketIds\" class=\"list-group-item item-list-client\" ng-if=\"socketId!==mySocketId\" ng-class=\"{selected: socketId===selectedSocketId}\" ng-click=\"changeSelectedSocketid(socketId)\">\n" +
+    "                    <a class=\"\" href=\"#{{socketId}}\" ng-click=\"changeSelectedSocketid(socketId)\"><img src=\"http://graph.facebook.com/{{usersInfo[socketId].facebook.id}}/picture?type=square\" alt=\"your avatar\"/></a>\n" +
+    "                    <a class=\"\" href=\"#{{socketId}}\" ng-click=\"changeSelectedSocketid(socketId)\">{{usersInfo[socketId].facebook.name}}</a>\n" +
     "                    <span class=\"bubble-message\" ng-show=\"usersInfo[socketId].newMess > 0\">{{usersInfo[socketId].newMess}}</span>\n" +
     "                </li>\n" +
     "            </ul>\n" +
     "        </div>\n" +
     "    </div>\n" +
     "\n" +
+    "    <!--chat box-->\n" +
     "    <div class=\"col-lg-8 col-md-8 col-sm-8\" id=\"chatbox\">\n" +
     "        <div class=\"row\">\n" +
     "\n" +
@@ -411,10 +422,10 @@ angular.module("home/home.tpl.html", []).run(["$templateCache", function($templa
     "                <li ng-repeat=\"data in mainConversation\" class=\"list-group-item\">\n" +
     "                    <div class=\"media\">\n" +
     "                        <div class=\"media-left\">\n" +
-    "                            <a ng-if=\"data.senderId\"><img src=\"http://graph.facebook.com/{{usersInfo[selectedClient].facebook.id}}/picture?type=square\" alt=\"your avatar\"/></a>\n" +
+    "                            <a ng-if=\"!data.me\"><img src=\"http://graph.facebook.com/{{selectedClientProfile.facebook.id}}/picture?type=square\" alt=\"your avatar\"/></a>\n" +
     "                        </div>\n" +
     "                        <div class=\"media-body\">\n" +
-    "                            <h4 class=\"media-heading\" ng-if=\"!data.me\" class=\"conversation-client-name\">{{usersInfo[selectedClient].facebook.name}}<a class=\"anchorjs-link\" href=\"#media-heading\"><span class=\"anchorjs-icon\"></span></a></h4>\n" +
+    "                            <h4 class=\"media-heading\" ng-if=\"!data.me\" class=\"conversation-client-name\">{{usersInfo[selectedSocketId].facebook.name}}<a class=\"anchorjs-link\" href=\"#media-heading\"><span class=\"anchorjs-icon\"></span></a></h4>\n" +
     "                            <div ng-class=\"{myConversion: data.me, otherConversation: !data.me}\">{{data.message}}</div>\n" +
     "                        </div>\n" +
     "                    </div>\n" +
@@ -424,10 +435,10 @@ angular.module("home/home.tpl.html", []).run(["$templateCache", function($templa
     "\n" +
     "        <span class=\"label label-warning\" ng-show=\"warning !== ''\">{{warning}}</span> <br/>\n" +
     "        <div class=\"input-group\">\n" +
-    "            <input type=\"text\" class=\"form-control\" aria-label=\"Text input with segmented button dropdown\" ng-model=\"userInput\" ng-keydown=\"onKeyDown($event)\" placeholder=\"type something here\" />\n" +
+    "            <input type=\"text\" class=\"form-control\" aria-label=\"Text input with segmented button dropdown\" ng-model=\"userInput\" ng-disabled=\"disabledButtonSend\" ng-keydown=\"onKeyDown($event)\" placeholder=\"type something here\" />\n" +
     "            <div class=\"input-group-btn\">\n" +
-    "                <button type=\"button\" name=\"button\" value=\"Send\" class=\"btn btn-default\" ng-click=\"sendMessage()\">Send</button>\n" +
-    "                <button type=\"button\" class=\"btn btn-default dropdown-toggle\" data-toggle=\"dropdown\" aria-expanded=\"false\">\n" +
+    "                <button type=\"button\" name=\"button\" value=\"Send\" class=\"btn btn-default\" ng-disabled=\"disabledButtonSend\" ng-click=\"sendMessage()\">Send</button>\n" +
+    "                <button type=\"button\" class=\"btn btn-default dropdown-toggle\" ng-disabled=\"disabledButtonSend\" data-toggle=\"dropdown\" aria-expanded=\"false\">\n" +
     "                    <span class=\"caret\"></span>\n" +
     "                    <span class=\"sr-only\">Toggle Dropdown</span>\n" +
     "                </button>\n" +

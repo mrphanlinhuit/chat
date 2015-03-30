@@ -1,14 +1,43 @@
 angular.module( 'chat', [
-  'templates-app',
-  'templates-common',
-  'chat.home',
-  'chat.about',
-  'ui.router',
-    'luegg.directives'
+    'luegg.directives',
+      'templates-app',
+      'templates-common',
+      'chat.home',
+      'chat.about',
+      'ui.router',
+    'ngAnimate',
+    'toastr'
+
 ])
 
-.config( function myAppConfig ( $stateProvider, $urlRouterProvider ) {
-  $urlRouterProvider.otherwise( '/home' );
+.config( function myAppConfig ( $stateProvider, $urlRouterProvider, toastrConfig) {
+    $urlRouterProvider.otherwise( '/home' );
+
+    angular.extend(toastrConfig, {
+        allowHtml: true,
+        closeButton: false,
+        closeHtml: '<button>&times;</button>',
+        containerId: 'toast-container',
+        extendedTimeOut: 5000,
+        iconClasses: {
+            error: 'toast-error',
+            info: 'toast-info',
+            success: 'toast-success',
+            warning: 'toast-warning'
+        },
+        maxOpened: 0,
+        messageClass: 'toast-message',
+        newestOnTop: true,
+        onHidden: null,
+        onShown: null,
+        positionClass: 'toast-top-right',
+        preventDuplicates: false,
+        tapToDismiss: true,
+        target: 'body',
+        timeOut: 5000,
+        titleClass: 'toast-title',
+        toastClass: 'toast'
+    });
 })
 
 .run( function run () {

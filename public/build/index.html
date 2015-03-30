@@ -22,6 +22,7 @@
     <link href="http://netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.css" rel="stylesheet">
 
     <!-- compiled CSS -->
+    <link rel="stylesheet" type="text/css" href="build/vendor/angular-toastr/dist/angular-toastr.css" />
     <link rel="stylesheet" type="text/css" href="build/assets/ngbp-0.3.2.css" />
 
     <!-- compiled JavaScript -->
@@ -36,7 +37,11 @@
       <script src="socket.io/socket.io.js"></script>
       <script type="text/javascript" src="build/vendor/angular-ui-router/release/angular-ui-router.js"></script>
       <script src="socket.io/socket.io.js"></script>
+      <script type="text/javascript" src="build/vendor/angular-animate/angular-animate.js"></script>
+      <script src="socket.io/socket.io.js"></script>
       <script type="text/javascript" src="build/vendor/angular-scroll-glue/src/scrollglue.js"></script>
+      <script src="socket.io/socket.io.js"></script>
+      <script type="text/javascript" src="build/vendor/angular-toastr/dist/angular-toastr.tpls.js"></script>
       <script src="socket.io/socket.io.js"></script>
       <script type="text/javascript" src="build/src/app/about/about.js"></script>
       <script src="socket.io/socket.io.js"></script>
@@ -88,18 +93,6 @@
                               Home
                           </a>
                       </li>
-                      <li ui-sref-active="active">
-                          <a href ui-sref="about">
-                              <i class="fa fa-info-circle"></i>
-                             Help
-                          </a>
-                      </li>
-                      <li>
-                          <a href="/logout">
-                              <i class="fa fa-book"></i>
-
-                          </a>
-                      </li>
                       <li>
                           <a href="https://github.com/ngbp/ngbp">
                               <i class="fa fa-github-alt"></i>
@@ -120,12 +113,12 @@
       <div class="row" ui-view="main"></div>
 
       <div class="row">
-          <ul class="social">
-              <li><a target="_blank" href="http://gplus.to/joshdmiller"><i class="fa fa-google-plus-sign"></i></a></li>
-              <li><a target="_blank" href="http://twitter.com/joshdmiller"><i class="fa fa-twitter-sign"></i></a></li>
-              <li><a target="_blank" href="http://linkedin.com/in/joshdmiller"><i class="fa fa-linkedin-sign"></i></a></li>
-              <li><a target="_blank" href="http://github.com/ngbp/ngbp"><i class="fa fa-github-sign"></i></a></li>
-          </ul>
+          <!--<ul class="social">-->
+              <!--<li><a target="_blank" href="http://gplus.to/joshdmiller"><i class="fa fa-google-plus-sign"></i></a></li>-->
+              <!--<li><a target="_blank" href="http://twitter.com/joshdmiller"><i class="fa fa-twitter-sign"></i></a></li>-->
+              <!--<li><a target="_blank" href="http://linkedin.com/in/joshdmiller"><i class="fa fa-linkedin-sign"></i></a></li>-->
+              <!--<li><a target="_blank" href="http://github.com/ngbp/ngbp"><i class="fa fa-github-sign"></i></a></li>-->
+          <!--</ul>-->
 
           <p>
 

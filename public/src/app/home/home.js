@@ -14,7 +14,9 @@
  */
 angular.module( 'chat.home', [
   'ui.router',
-  'plusOne'
+  'plusOne',
+    'ngAnimate',
+    'toastr'
 ])
 
 /**
@@ -38,16 +40,19 @@ angular.module( 'chat.home', [
 /**
  * And of course we define a controller for our route.
  */
-.controller( 'HomeCtrl', [ '$scope', 'socketConnector', '$http', function( $scope , socketConnector, $http) {
+.controller( 'HomeCtrl', [ '$scope', 'socketConnector', '$http', 'toastr', function( $scope , socketConnector, $http, toastr) {
         $scope.socketIds = [];//list all socketId
         $scope.usersInfo = {};//
-        $scope.selectedClient ='';//the receiver
+        $scope.selectedSocketId ='';//the receiver
         $scope.userInput = '';
         $scope.mainConversation = [];
         $scope.warning = '';
         $scope.myProfile= '';
+        $scope.selectedClientProfile = {};
         $scope.mySocketId = '';
         $scope.loadMessages = false;
+        $scope.disabledButtonSend = true;
+        var maxOldMessages = 15;
 
 
         //get own user profile
@@ -57,7 +62,7 @@ angular.module( 'chat.home', [
                 $scope.myProfile = data;
 
                 socketConnector.sendMessage('greeting', data);
-                socketConnector.sendMessage('getListClients');
+                //socketConnector.sendMessage('getListClients');
                 $scope.mySocketId = socketConnector.socket.id;
             })
             .error();
@@ -69,9 +74,9 @@ angular.module( 'chat.home', [
             console.log('receive message from server: ', data);
         });
 
-        socketConnector.listen('userProfile', function (data) {
-            console.log('user profile: ', data);
-        });
+        //socketConnector.listen('userProfile', function (data) {
+        //    console.log('user profile: ', data);
+        //});
 
         //send a message to a special client
         socketConnector.listen('privateMessage', function (data) {
@@ -82,10 +87,10 @@ angular.module( 'chat.home', [
 
             $scope.usersInfo[data.senderId].conversation.push(data);
 
-            console.log('$scope.selectedClient:  ', $scope.selectedClient);
+            console.log('$scope.selectedSocketId:  ', $scope.selectedSocketId);
             console.log('data.socketId:  ', data.socketId);
 
-            if( $scope.selectedClient === data.senderId){//if the message was sent from selected client then show the the conversation
+            if( $scope.selectedSocketId === data.senderId){//if the message was sent from selected client then show the the conversation
                 $scope.mainConversation = $scope.usersInfo[data.senderId].conversation;
             }else{
                 if(!$scope.usersInfo[data.senderId].newMess){//show message bubble if sender was selected
@@ -102,10 +107,9 @@ angular.module( 'chat.home', [
             $scope.$apply();
         });
 
-        socketConnector.listen('retrieveMessages', function (data) {
-            console.log('retrieveMessages: ', data);
-            var myFbId = data[0].sender;
-            var receiverFbId = data[0].receiver;
+        socketConnector.listen('oldMessages', function (data) {
+
+            var receiverFbId =  (data[0].receiver !== $scope.myProfile.facebook.id) ? data[0].receiver : data[0].sender;
             for(var i=0; i<$scope.socketIds.length; i++){
                 if($scope.usersInfo[$scope.socketIds[i]].facebook.id === receiverFbId){
                     if(!$scope.usersInfo[$scope.socketIds[i]].conversation){
@@ -115,12 +119,15 @@ angular.module( 'chat.home', [
                     for(var j=0; j<data.length; j++){
                         if(data[j].sender === $scope.myProfile.facebook.id){
                             data[j].me = true;
+                        }else{
+                            data[j].me = false;
                         }
                     }
 
                     $scope.usersInfo[$scope.socketIds[i]].conversation = data;
                     $scope.mainConversation = data;
-                    console.log('retrieve message: ', data);
+                    console.log('$scope.socketIds[i]]: ', $scope.socketIds[i]);
+                    console.log('retrieve message: ',  $scope.usersInfo[$scope.socketIds[i]].conversation);
                     $scope.$apply();
                 }
             }
@@ -131,50 +138,66 @@ angular.module( 'chat.home', [
             $scope.socketIds = [];
             $scope.socketIds = data.socketIds;
             $scope.usersInfo = data.usersInfo;
-            $scope.$apply();
+
+            if(data.newClient.userInfo.facebook.id === $scope.myProfile.facebook.id){
+                var mess = 'You logged in!';
+            }else{
+                var mess = data.newClient.userInfo.facebook.name + ' logged out!';
+            }
+
+            var avatar = '<img alt="your avatar" src="http://graph.facebook.com/'+data.newClient.userInfo.facebook.id+'/picture?type=square">';
+            toastr.success(avatar, mess);
+
             console.log('list socketIds has changed: ', $scope.socketIds);
             console.log('list client has changed: ', $scope.usersInfo);
+            $scope.$apply();
         });
 
-        //get the old message from server
-        //socketConnector.listen('oldMessage', function (data) {
-        //    if($scope.usersInfo[$scope.selectedClient].facebook.id === data.receiver){//if the selected client is the receiver then show the message
-        //        for(var i=0; i<data.length; i++){
-        //            var tamp = {};
-        //            tamp.facebook = {};
-        //            tamp.facebook.id = data[i].facebookSenderId;
-        //            tamp.senderId = $scope.mySocketId;
-        //            tamp.sender = $scope.myProfile;
-        //            tamp.message = data[i].message;
-        //            data[i] = tamp;
-        //        }
-        //
-        //        $scope.mainConversation = data;
-        //        console.log('the old messages: ', data);
-        //    }
-        //});
+        socketConnector.listen('updateListClients', function (data) {
+            $scope.socketIds = data.socketIds;
+            $scope.usersInfo = data.usersInfo;
+
+            var mess = data.clientDis.userInfo.facebook.name + ' logged out!';
+            var avatar = '<img alt="your avatar" src="http://graph.facebook.com/'+data.clientDis.userInfo.facebook.id+'/picture?type=square">';
+            toastr.info(avatar, mess);
+
+            if(data.clientDis.socketId === $scope.selectedSocketId){
+                $scope.warning = 'your friend has logged out!';
+                $scope.disabledButtonSend = true;
+            }
+            console.log('user disconnected: ', data.clientDis);
+            console.log('list socketIds has updated: ', $scope.socketIds);
+            console.log('list client has updated: ', $scope.usersInfo);
+            $scope.$apply();
+        });
 
 
         //change selected client to send message
-        $scope.changeSelectedClient = function (socketId) {
+        $scope.changeSelectedSocketid = function (socketId) {
             //$scope.loadMessages = true;
             if(socketId === $scope.mySocketId){
                 return;
             }
             $scope.warning = '';
-            $scope.selectedClient = socketId;
+            $scope.selectedSocketId = socketId;
+            $scope.selectedClientProfile = $scope.usersInfo[socketId];
+            $scope.disabledButtonSend = false;
 
             if(!$scope.usersInfo[socketId].conversation){
                 $scope.usersInfo[socketId].conversation = [];
             }
+            if($scope.usersInfo[socketId].conversation.length < maxOldMessages){ //===require the old messages
+                var myFbId = $scope.myProfile.facebook.id;
+                var receiverFbId = $scope.usersInfo[socketId].facebook.id;
+                requestOldMessage(myFbId, receiverFbId);
+                console.log('require the old messages');
+            }
 
             $scope.mainConversation = $scope.usersInfo[socketId].conversation;
             $scope.usersInfo[socketId].newMess = 0;
-            console.log('change destination: ', $scope.selectedClient);
+            console.log('change destination: ', $scope.selectedSocketId);
 
-            var myFbId = $scope.myProfile.facebook.id;
-            var receiverFbId = $scope.usersInfo[socketId].facebook.id;
-            requestOldMessage(myFbId, receiverFbId);
+
 
         };
 
@@ -182,8 +205,8 @@ angular.module( 'chat.home', [
         //send message
         $scope.sendMessage = function () {
             $scope.warning = '';
-            if($scope.selectedClient !== ''){
-                var socketId =  $scope.selectedClient;
+            if($scope.selectedSocketId !== ''){
+                var socketId =  $scope.selectedSocketId;
                 var mess = $scope.userInput;
                 if(mess === ''){
                     $scope.warning = 'the message is empty!';
@@ -201,7 +224,7 @@ angular.module( 'chat.home', [
                         if(!$scope.usersInfo[socketId].conversation){
                             $scope.usersInfo[socketId].conversation = [];
                         }
-                        $scope.usersInfo[socketId].conversation.push({receiverId: socketId, message: mess, sender: $scope.myProfile});
+                        $scope.usersInfo[socketId].conversation.push({receiverId: socketId, message: mess, sender: $scope.myProfile, me: true});
 
                         $scope.mainConversation =  $scope.usersInfo[socketId].conversation;
 

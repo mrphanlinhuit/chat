@@ -28,12 +28,14 @@ module.exports = function (io, passport) {
                 usersInfo[socket.id] = data; //store user's facebook profile
                 //console.log('greateing: ', clients);
             }
+            var userInfo = usersInfo[socket.id];
+            io.to(roomName).emit('listClients', {socketIds: socketIds, usersInfo: usersInfo, newClient: {socketId: socket.id, userInfo: userInfo}});// send clients list to all clients in room
             console.log('data from client: ', socket.user);
         });
-
-        socket.on('getListClients', function (data) {
-            io.to(roomName).emit('listClients', {socketIds: socketIds, usersInfo: usersInfo});
-        });
+        //
+        //socket.on('getListClients', function (data) {
+        //
+        //});
 
         socket.on('privateMessage', function (data) {
             console.log('private message: ', data);
@@ -55,7 +57,7 @@ module.exports = function (io, passport) {
                     return ;
                 }
                 console.log('old messages: ', data);
-                socket.emit('retrieveMessages', data);
+                socket.emit('oldMessages', data);
             });
         });
 
@@ -63,8 +65,11 @@ module.exports = function (io, passport) {
 
         socket.on('disconnect', function(){
             socketIds = getListSocketId(namespace, roomName);//refresh clients list
-            io.to(roomName).emit('listClients', {socketIds: socketIds, usersInfo: usersInfo});
+            var userInfo = usersInfo[socket.id];
+            delete usersInfo[socket.id];
+            io.to(roomName).emit('updateListClients', {socketIds: socketIds, usersInfo: usersInfo, clientDis: {socketId: socket.id, userInfo: userInfo}});//update clients list
             console.log('user disconnected: ', socket.user);
+            console.log('users info: ', usersInfo);
         });
     });
 
@@ -100,9 +105,15 @@ var storeMessage = function (fbSender, fbReceiver, mess) {
 
 var retrieveMessage = function (sender, receiver, cb) {
 
-    messModel.find({sender: sender, receiver: receiver})
+    messModel.find()
+        .where({
+            $or: [{sender: sender, receiver: receiver},
+                {sender: receiver, receiver: sender}]
+        })
         .limit(limitMessPerOneLoad)
+        .sort({'meta.time': 'asc'})
         .exec(function (err, data) {
             cb(err, data);
         });
 };
+
