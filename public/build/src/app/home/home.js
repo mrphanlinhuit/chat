@@ -37,12 +37,14 @@ angular.module( 'chat.home', [
   });
 })
 
+
 /**
  * And of course we define a controller for our route.
  */
-.controller( 'HomeCtrl', [ '$scope', 'socketConnector', '$http', 'toastr', function( $scope , socketConnector, $http, toastr) {
+.controller( 'HomeCtrl', [ '$scope','$compile', 'socketConnector', '$http', 'toastr', function( $scope , $compile, socketConnector, $http, toastr) {
         $scope.socketIds = [];//list all socketId
         $scope.usersInfo = {};//
+        $scope.usersInfoArr = [];
         $scope.selectedSocketId ='';//the receiver
         $scope.userInput = '';
         $scope.mainConversation = [];
@@ -52,6 +54,10 @@ angular.module( 'chat.home', [
         $scope.mySocketId = '';
         $scope.loadMessages = false;
         $scope.disabledButtonSend = true;
+        $scope.participants = [];
+        $scope.searchParticipant = [];
+        $scope.groupName = '';
+
         var maxOldMessages = 15;
 
 
@@ -139,13 +145,19 @@ angular.module( 'chat.home', [
             $scope.socketIds = data.socketIds;
             $scope.usersInfo = data.usersInfo;
 
-            if(data.newClient.userInfo.facebook.id === $scope.myProfile.facebook.id){
-                var mess = 'You logged in!';
-            }else{
-                var mess = data.newClient.userInfo.facebook.name + ' logged out!';
+            for(var i=0; i<$scope.socketIds.length; i++){
+                $scope.usersInfoArr[i] = $scope.usersInfo[$scope.socketIds[i]];
             }
 
-            var avatar = '<img alt="your avatar" src="http://graph.facebook.com/'+data.newClient.userInfo.facebook.id+'/picture?type=square">';
+            var mess = '';
+            if(data.newClient.userInfo.facebook.id === $scope.myProfile.facebook.id){
+                mess = 'You logged in!';
+            }else{
+                mess = data.newClient.userInfo.facebook.name + ' logged out!';
+            }
+
+            //var avatar = '<img alt="your avatar" src="http://graph.facebook.com/'+data.newClient.userInfo.facebook.id+'/picture?type=square">';
+            var avatar = '';
             toastr.success(avatar, mess);
 
             console.log('list socketIds has changed: ', $scope.socketIds);
@@ -156,9 +168,13 @@ angular.module( 'chat.home', [
         socketConnector.listen('updateListClients', function (data) {
             $scope.socketIds = data.socketIds;
             $scope.usersInfo = data.usersInfo;
+            for(var i=0; i<$scope.socketIds.length; i++){
+                $scope.usersInfoArr[i] = $scope.usersInfo[$scope.socketIds[i]];
+            }
 
             var mess = data.clientDis.userInfo.facebook.name + ' logged out!';
-            var avatar = '<img alt="your avatar" src="http://graph.facebook.com/'+data.clientDis.userInfo.facebook.id+'/picture?type=square">';
+            //var avatar = '<img alt="your avatar" src="http://graph.facebook.com/'+data.clientDis.userInfo.facebook.id+'/picture?type=square">';
+            var avatar = '';
             toastr.info(avatar, mess);
 
             if(data.clientDis.socketId === $scope.selectedSocketId){
@@ -169,6 +185,18 @@ angular.module( 'chat.home', [
             console.log('list socketIds has updated: ', $scope.socketIds);
             console.log('list client has updated: ', $scope.usersInfo);
             $scope.$apply();
+        });
+
+
+        socketConnector.listen('subcrible', function (data) {
+            if(data.status === 'success'){
+                console.log('the room ', data.room);
+            }
+        });
+
+        socketConnector.listen('inviteToRoom', function (data) {
+            console.log('receive an invite to join the room ', data.room);
+            socketConnector.sendMessage('subscribe', {room: data.room});
         });
 
 
@@ -255,10 +283,52 @@ angular.module( 'chat.home', [
             }
         };
 
+        $scope.addConversationTab = function (id) {
+            var id = id || '';
+            var tabTemplate = '<li role="presentation">' +
+                '<input type="hidden" name="tabId" value="'+ ''+'" />'+
+                '<input type="hidden" name="tabId" value="'+ ''+'" />'+
+                '<input type="hidden" name="tabId" value="'+ ''+'" />'+
+                '<a href="#conversation">new tab</a>' +
+                '</li>';
+
+            $('#conversation-tabs ul.nav li:last').before($compile(tabTemplate)($scope));
+
+        }
+
+        $scope.inviteToGroup = function (room) {
+            if($scope.groupName !== ''){
+                //var roomRandom = Math.round(Math.random()*999999999999);
+                socketConnector.sendMessage('invite', {
+                    room: room,
+                    participants: $scope.participants
+                });
+            }
+            $('input[name="participants"]:checked').map(function () {
+                participants.push($(this).val());
+            });
+            console.log(participants);
+        };
+
+
+        $scope.subcribleGroup = function () {
+            if($scope.groupName !== ''){
+                //var roomRandom = Math.round(Math.random()*999999999999);
+                socketConnector.sendMessage('subcrible', {
+                    room: $scope.groupName
+                });
+            }
+        }
+
+
         var requestOldMessage = function(myFbId, receiverFbId){
                 socketConnector.sendMessage('requestOldMessages', {
                     myFbId: myFbId,
                     receiverFbId: receiverFbId
                 });
         };
+
+        var notifycation = function (avatar, mess, type) {
+            toastr[type](avatar, mess);
+        }
 }]);

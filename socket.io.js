@@ -10,6 +10,7 @@ var namespace = '/';
 var roomName = 'chatRoom';
 var usersInfo = {};//user's facebook profile
 var limitMessPerOneLoad = 20;
+var rooms = {};
 
 module.exports = function (io, passport) {
 
@@ -30,7 +31,7 @@ module.exports = function (io, passport) {
             }
             var userInfo = usersInfo[socket.id];
             io.to(roomName).emit('listClients', {socketIds: socketIds, usersInfo: usersInfo, newClient: {socketId: socket.id, userInfo: userInfo}});// send clients list to all clients in room
-            console.log('data from client: ', socket.user);
+            console.log('data from client: ', usersInfo);
         });
         //
         //socket.on('getListClients', function (data) {
@@ -71,7 +72,33 @@ module.exports = function (io, passport) {
             console.log('user disconnected: ', socket.user);
             console.log('users info: ', usersInfo);
         });
+
+        socket.on('subcrible', function(data) {
+
+            socket.join(data.room);
+
+            socket.emit('subscribe', {
+                status: 'success',
+                room: data.room
+            });
+
+
+            console.log('joining room', data.room);
+            console.log('client in room: ', getListSocketId(namespace, data.room));
+
+        });
+
+        socket.on('inviteToGroup', function (data) {
+
+        });
+
+
+
+
+
     });
+
+
 
     //get all clients in the room
     function getListSocketId(namespace, roomName) {
