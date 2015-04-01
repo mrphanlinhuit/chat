@@ -6,6 +6,7 @@
     #chat{
         min-height: 500px;
         max-height: 500px;
+        position: relative;
     }
     ul{
         list-style: none;
@@ -51,6 +52,10 @@
 
     }
 
+    .group-feature:hover{
+        cursor: hand;
+    }
+
     .selected{
         background-color: #FAEDB9;
     }
@@ -59,6 +64,22 @@
         margin: 5px 0;
         background-color: #C5DCEC;
     }
+
+    .add-participants{
+        position: absolute;
+        top: 50px;
+        left: 20px;
+        max-height: 200px;
+        opacity: 0.9;
+        background-color: rgb(140, 185, 226);
+        padding: 3px;
+        overflow-y: scroll;
+    }
+
+    .add-participants input{
+        margin: 4px 0;
+    }
+
     .myConversion{
         margin: 5px 0 5px 25px;
         background-color: #D6E2F2;
@@ -74,6 +95,45 @@
 
     #suggest-participants{
 
+    }
+
+    .btn-circle {
+        width: 30px;
+        height: 30px;
+        text-align: center;
+        padding: 6px 0;
+        font-size: 12px;
+        line-height: 1.428571429;
+        border-radius: 15px;
+    }
+    .btn-circle.btn-lg {
+        width: 50px;
+        height: 50px;
+        padding: 10px 16px;
+        font-size: 18px;
+        line-height: 1.33;
+        border-radius: 25px;
+    }
+    .btn-circle.btn-xl {
+        width: 70px;
+        height: 70px;
+        padding: 10px 16px;
+        font-size: 24px;
+        line-height: 1.33;
+        border-radius: 35px;
+    }
+
+    #list-clients{
+        position: relative;
+    }
+    #btn-config{
+        position: absolute;
+        top: 19px;
+        right: 10px;
+    }
+
+    .dropdown-menu {
+        right: 30px;
     }
 
     #chatbox{
@@ -97,24 +157,45 @@
     <!-- FACEBOOK INFORMATION -->
 
     <div class="col-lg-4 col-md-4 col-sm-4">
-        <div class="row">
+        <div class="row" id="list-clients">
             <h3 class="text-primary"><span class="fa fa-facebook"></span> Facebook</h3>
-            <div class="input-group">
-                    <!--<input type="text" name="group-friends" ng-model="searchText" placeholder="add friends to this chat"/>-->
-                <input type="text" ng-model="groupName" placeholder="Enter group name"/>
-                <input type="button" class="btn btn-default" value="Done" ng-click="subcribleGroup()"/>
+            <button type="button" class="btn btn-default btn-circle dropdown-toggle" data-toggle="dropdown" id="btn-config"><i class="fa fa-cog"></i></button>
+                    <ul class="dropdown-menu" role="menu">
+                        <li><a href="#" ng-click="enableInputGroupName()">Add friends to chat</a></li>
+                        <li><a href="#">Another action</a></li>
+                        <li><a href="#">Something else here</a></li>
+                        <li class="divider"></li>
+                        <li><a href="#">Separated link</a></li>
+                    </ul>
 
-            </div>
+                    <!--<input type="text" name="group-friends" ng-model="searchText" placeholder="add friends to this chat"/>-->
+                <div class="input-group"  ng-show="inputGroupname">
+                    <input type="text" class="form-control" ng-model="groupName" placeholder="Enter group name">
+                    <span class="input-group-btn">
+                        <button class="btn btn-default" type="button" ng-click="subscribeGroup()">Go!</button>
+                    </span>
+                </div>
 
         </div>
 
         <div class="row">
             <ul class="list-group" ng-show="socketIds.length>0">
+                <!--me-->
                 <li class="list-group-item item-list-client me">
                     <a><img src="http://graph.facebook.com/{{myProfile.facebook.id}}/picture?type=square" alt="your avatar"/></a>
                     <a class="" href="#{{mySocketId}}">{{myProfile.facebook.name}}</a>
                 </li>
 
+                <!--group-->
+                <li ng-repeat="group in groupId" class="list-group-item item-list-client" ng-class="{selected: group===selectedGroup}" ng-click="changeSelectedGroup(group)">
+                    <a class="" href="#{{group}}" ng-click="changeSelectedSocketid(group)"><i class="fa fa-users"></i></a>
+                    <a class="" href="#{{group}}" ng-click="changeSelectedSocketid(group)">{{group}}</a>
+                    <span class="bubble-message" ng-show="groups[group].newMess > 0">{{groups[group].newMess}}</span>
+                    <input type="hidden" value="{{groups[group].participants}}"/>
+
+                </li>
+
+                <!--client-->
                 <li ng-repeat="user in usersInfoArr | filter:searchText" class="list-group-item item-list-client" ng-if="user.socketId!==mySocketId" ng-class="{selected: user.socketId===selectedSocketId}" ng-click="changeSelectedSocketid(user.socketId)">
                     <a class="" href="#{{user.socketId}}" ng-click="changeSelectedSocketid(user.socketId)"><img src="http://graph.facebook.com/{{user.facebook.id}}/picture?type=square" alt="your avatar"/></a>
                     <a class="" href="#{{user.socketId}}" ng-click="changeSelectedSocketid(user.socketId)">{{user.facebook.name}}</a>
@@ -131,17 +212,17 @@
             <ul class="nav nav-tabs">
                 <li role="presentation" class="active">
                     <input type="hidden" name="conversationId" value=""/>
-                    <a href="#main-tab">Home</a>
+                    <a href="#main-tab">Conversation</a>
                 </li>
-                <li role="presentation"><a href="">Main</a></li>
-                <li role="presentation" class="add-conversation-tab" ng-click="addConversationTab()"><a href="#"><i class="fa fa-plus"></i></a></li>
+                <li role="presentation" class="add-conversation-tab" ng-if="showConfigGroupBtn"  ng-click="showParticipants()"><a href="#"><i class="fa fa-plus"></i></a></li>
             </ul>
-            <ul id="" class="tab-content" scroll-glue>
+            <ul id="conversation" class="tab-content" scroll-glue>
                 <div class="tab-pane active" id="main-tab">
                     <li ng-repeat="data in mainConversation" class="list-group-item">
                         <div class="media">
                             <div class="media-left">
-                                <a ng-if="!data.me"><img src="http://graph.facebook.com/{{selectedClientProfile.facebook.id}}/picture?type=square" alt="your avatar"/></a>
+                                <a ng-if="!data.me"><img src="http://graph.facebook.com/{{data.sender.facebook.id || data.sender}}/picture?type=square" alt="your avatar"/></a>
+
                             </div>
                             <div class="media-body">
                                 <h6 class="media-heading" ng-if="!data.me" class="conversation-client-name">{{usersInfo[selectedSocketId].facebook.name}}<a class="anchorjs-link" href="#media-heading"><span class="anchorjs-icon"></span></a></h6>
@@ -154,14 +235,14 @@
         </div>
 
         <div class="row">
-            <li ng-repeat="user in usersInfoArr | filter:searchText" class="list-group-item item-list-client" ng-if="user.socketId!==mySocketId" ng-class="{selected: user.socketId===selectedSocketId}">
-                <a class="" href="#{{user.socketId}}"><img src="http://graph.facebook.com/{{user.facebook.id}}/picture?type=square" alt="your avatar"/></a>
-                <a class="" href="#{{user.socketId}}" >{{user.facebook.name}}</a>
-                <input type="checkbox" id="participants" name="participants" value="{{user.socketId}}"/>
-                <span class="bubble-message" ng-show="user.newMess > 0">{{user.newMess}}</span>
-                <input type="button" value="Done"/>
-
-            </li>
+           <ul class="add-participants" ng-show="addparticipants">
+               <li ng-repeat="user in usersInfoArr" class="list-group-item item-list-client" ng-if="user.socketId!==mySocketId" ng-class="{selected: user.socketId===selectedSocketId}">
+                   <a class="" href="#{{user.socketId}}"><img src="http://graph.facebook.com/{{user.facebook.id}}/picture?type=square" alt="your avatar"/></a>
+                   <a class="" href="#{{user.socketId}}" >{{user.facebook.name}}</a>
+                   <input type="checkbox" id="participants" name="participants" value="{{user.socketId}}"/>
+               </li>
+               <li><input type="button" class="btn btn-default" value="Done" ng-click="inviteToGroup()"/></li>
+           </ul>
             <span class="label label-warning" ng-show="warning !== ''">{{warning}}</span> <br/>
             <div class="input-group">
                 <input type="text" class="form-control" aria-label="Text input with segmented button dropdown" ng-model="userInput" ng-disabled="disabledButtonSend" ng-keydown="onKeyDown($event)" placeholder="type something here" />

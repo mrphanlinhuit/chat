@@ -6,7 +6,8 @@ angular.module("chat").factory("socketConnector", [ "$rootScope", function($root
 
     connector.connect = function(baseUrl){
         baseUrl = baseUrl || '/';
-        connector.socket = io.connect(baseUrl);
+        //connector.socket = io.connect(baseUrl);
+        connector.socket = io();
     };
 
     connector.sendMessage = function(eventName, eventData){

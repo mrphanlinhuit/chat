@@ -57,6 +57,12 @@ angular.module( 'chat.home', [
         $scope.participants = [];
         $scope.searchParticipant = [];
         $scope.groupName = '';
+        $scope.groupId = [];
+        $scope.groups = {};//all of the room which the use subscribe
+        $scope.selectedGroup = '';
+        $scope.showConfigGroupBtn = false;
+        $scope.addparticipants = false;
+        $scope.inputGroupname = false;
 
         var maxOldMessages = 15;
 
@@ -113,7 +119,31 @@ angular.module( 'chat.home', [
             $scope.$apply();
         });
 
+        socketConnector.listen('sendFromRoom', function (data) {
+            if(!$scope.groups[data.room].conversation){
+                $scope.groups[data.room].conversation = [];
+            }
+            $scope.groups[data.room].conversation.push(data);
+            console.log('receiver message from group: ', data.room);
+
+            if($scope.selectedGroup === data.room){
+                $scope.mainConversation = $scope.groups[data.room].conversation;
+            }else{
+                if(!$scope.groups[data.room].newMess){//show message bubble if sender was selected
+                    $scope.groups[data.room].newMess = 1;
+                }else{
+                    $scope.groups[data.room].newMess ++;
+                }
+            }
+
+            $scope.$apply();
+        });
+
         socketConnector.listen('oldMessages', function (data) {
+
+            if(data.length <= 0){//if they have ever talked before
+                return ;
+            }
 
             var receiverFbId =  (data[0].receiver !== $scope.myProfile.facebook.id) ? data[0].receiver : data[0].sender;
             for(var i=0; i<$scope.socketIds.length; i++){
@@ -188,28 +218,54 @@ angular.module( 'chat.home', [
         });
 
 
-        socketConnector.listen('subcrible', function (data) {
+        socketConnector.listen('subscribe', function (data) {
             if(data.status === 'success'){
-                console.log('the room ', data.room);
+                console.log('the room ', data.room, 'successfully');
+                $scope.groupId.push(data.room);
+                $scope.groups[data.room] = {};
+                $scope.groups[data.room].participants = data.participants;
+
+                $scope.$apply();
             }
+        });
+
+        socketConnector.listen('updateRoom', function(data){
+            $scope.groups[data.room].participants = data.participants;
+            console.log('update room: ', data);
+            console.log('participants in this room: ', data.participants);
+
+            $scope.$apply();
         });
 
         socketConnector.listen('inviteToRoom', function (data) {
             console.log('receive an invite to join the room ', data.room);
-            socketConnector.sendMessage('subscribe', {room: data.room});
+            socketConnector.sendMessage('joinRoom', {room: data.room});
+        });
+
+        socketConnector.listen('joinRoom', function (data) {
+            $scope.groupId.push(data.room);
+            $scope.groups[data.room] = {};
+            $scope.groups[data.room].participants = data.participants;
+            console.log('join them room ', data.room);
+            console.log('participants in this room: ', data.participants);
+
+            $scope.$apply();
         });
 
 
         //change selected client to send message
-        $scope.changeSelectedSocketid = function (socketId) {
+        $scope.changeSelectedSocketid = function (socketId, type) {
             //$scope.loadMessages = true;
             if(socketId === $scope.mySocketId){
                 return;
             }
             $scope.warning = '';
+            $scope.selectedGroup = '';
+            $scope.showConfigGroupBtn = false;
+            $scope.disabledButtonSend = false;
             $scope.selectedSocketId = socketId;
             $scope.selectedClientProfile = $scope.usersInfo[socketId];
-            $scope.disabledButtonSend = false;
+
 
             if(!$scope.usersInfo[socketId].conversation){
                 $scope.usersInfo[socketId].conversation = [];
@@ -224,23 +280,35 @@ angular.module( 'chat.home', [
             $scope.mainConversation = $scope.usersInfo[socketId].conversation;
             $scope.usersInfo[socketId].newMess = 0;
             console.log('change destination: ', $scope.selectedSocketId);
+        };
 
+        $scope.changeSelectedGroup = function (room) {
+            $scope.warning = '';
+            $scope.disabledButtonSend = false;
+            $scope.showConfigGroupBtn = true;
+            $scope.selectedSocketId = '';
+            $scope.selectedClientProfile = {};
 
-
+            $scope.selectedGroup = room;
+            if(!$scope.groups[room].conversation){
+                $scope.groups[room].conversation = '';
+            }
+            $scope.groups[room].newMess = 0;
+            $scope.mainConversation = $scope.groups[room].conversation;
         };
 
 
         //send message
         $scope.sendMessage = function () {
             $scope.warning = '';
+            var mess = $scope.userInput;
+            if(mess === ''){
+                $scope.warning = 'the message is empty!';
+                return false;
+            }
+
             if($scope.selectedSocketId !== ''){
                 var socketId =  $scope.selectedSocketId;
-                var mess = $scope.userInput;
-                if(mess === ''){
-                    $scope.warning = 'the message is empty!';
-                    return false;
-                }
-
                 if($scope.mySocketId!== ''){
                     if( $scope.mySocketId !== socketId){
                         $scope.userInput = '';
@@ -265,6 +333,25 @@ angular.module( 'chat.home', [
                 }
 
             }
+            else if($scope.selectedGroup !== ''){
+                var room =$scope.selectedGroup;
+                $scope.userInput = '';
+                socketConnector.sendMessage('sendToRoom', {
+                    room: room,
+                    message: mess
+                });
+                if(!$scope.groups[room].conversation){
+                    $scope.groups[room].conversation = [];
+                }
+                $scope.groups[room].conversation.push({
+                    room: room,
+                    message: mess,
+                    sender: $scope.myProfile,
+                    me: true
+                });
+                $scope.mainConversation = $scope.groups[room].conversation;
+
+            }
             else{
                 $scope.warning = 'you don\'t specify a client to send the message';
             }
@@ -284,7 +371,7 @@ angular.module( 'chat.home', [
         };
 
         $scope.addConversationTab = function (id) {
-            var id = id || '';
+            id = id || '';
             var tabTemplate = '<li role="presentation">' +
                 '<input type="hidden" name="tabId" value="'+ ''+'" />'+
                 '<input type="hidden" name="tabId" value="'+ ''+'" />'+
@@ -294,30 +381,44 @@ angular.module( 'chat.home', [
 
             $('#conversation-tabs ul.nav li:last').before($compile(tabTemplate)($scope));
 
+        };
+
+        $scope.showParticipants = function () {
+            $scope.addparticipants = true;
         }
 
-        $scope.inviteToGroup = function (room) {
+        $scope.inviteToGroup = function () {
             if($scope.groupName !== ''){
+                var participants = [];
+                $('input[name="participants"]:checked').map(function () {
+                    participants.push($(this).val());
+                });
                 //var roomRandom = Math.round(Math.random()*999999999999);
-                socketConnector.sendMessage('invite', {
-                    room: room,
-                    participants: $scope.participants
+                socketConnector.sendMessage('inviteToRoom', {
+                    room: $scope.groupName,
+                    participants: participants
                 });
             }
-            $('input[name="participants"]:checked').map(function () {
-                participants.push($(this).val());
-            });
+
+            $scope.addparticipants = false;
+
             console.log(participants);
         };
 
 
-        $scope.subcribleGroup = function () {
+        $scope.subscribeGroup = function () {
             if($scope.groupName !== ''){
                 //var roomRandom = Math.round(Math.random()*999999999999);
-                socketConnector.sendMessage('subcrible', {
+                socketConnector.sendMessage('subscribe', {
                     room: $scope.groupName
                 });
+
+                $scope.inputGroupname = false;
             }
+        };
+
+        $scope.enableInputGroupName = function () {
+            $scope.inputGroupname = true;
         }
 
 
@@ -330,5 +431,5 @@ angular.module( 'chat.home', [
 
         var notifycation = function (avatar, mess, type) {
             toastr[type](avatar, mess);
-        }
+        };
 }]);

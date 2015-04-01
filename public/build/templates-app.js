@@ -307,6 +307,7 @@ angular.module("home/home.tpl.html", []).run(["$templateCache", function($templa
     "    #chat{\n" +
     "        min-height: 500px;\n" +
     "        max-height: 500px;\n" +
+    "        position: relative;\n" +
     "    }\n" +
     "    ul{\n" +
     "        list-style: none;\n" +
@@ -352,6 +353,10 @@ angular.module("home/home.tpl.html", []).run(["$templateCache", function($templa
     "\n" +
     "    }\n" +
     "\n" +
+    "    .group-feature:hover{\n" +
+    "        cursor: hand;\n" +
+    "    }\n" +
+    "\n" +
     "    .selected{\n" +
     "        background-color: #FAEDB9;\n" +
     "    }\n" +
@@ -360,6 +365,22 @@ angular.module("home/home.tpl.html", []).run(["$templateCache", function($templa
     "        margin: 5px 0;\n" +
     "        background-color: #C5DCEC;\n" +
     "    }\n" +
+    "\n" +
+    "    .add-participants{\n" +
+    "        position: absolute;\n" +
+    "        top: 50px;\n" +
+    "        left: 20px;\n" +
+    "        max-height: 200px;\n" +
+    "        opacity: 0.9;\n" +
+    "        background-color: rgb(140, 185, 226);\n" +
+    "        padding: 3px;\n" +
+    "        overflow-y: scroll;\n" +
+    "    }\n" +
+    "\n" +
+    "    .add-participants input{\n" +
+    "        margin: 4px 0;\n" +
+    "    }\n" +
+    "\n" +
     "    .myConversion{\n" +
     "        margin: 5px 0 5px 25px;\n" +
     "        background-color: #D6E2F2;\n" +
@@ -375,6 +396,45 @@ angular.module("home/home.tpl.html", []).run(["$templateCache", function($templa
     "\n" +
     "    #suggest-participants{\n" +
     "\n" +
+    "    }\n" +
+    "\n" +
+    "    .btn-circle {\n" +
+    "        width: 30px;\n" +
+    "        height: 30px;\n" +
+    "        text-align: center;\n" +
+    "        padding: 6px 0;\n" +
+    "        font-size: 12px;\n" +
+    "        line-height: 1.428571429;\n" +
+    "        border-radius: 15px;\n" +
+    "    }\n" +
+    "    .btn-circle.btn-lg {\n" +
+    "        width: 50px;\n" +
+    "        height: 50px;\n" +
+    "        padding: 10px 16px;\n" +
+    "        font-size: 18px;\n" +
+    "        line-height: 1.33;\n" +
+    "        border-radius: 25px;\n" +
+    "    }\n" +
+    "    .btn-circle.btn-xl {\n" +
+    "        width: 70px;\n" +
+    "        height: 70px;\n" +
+    "        padding: 10px 16px;\n" +
+    "        font-size: 24px;\n" +
+    "        line-height: 1.33;\n" +
+    "        border-radius: 35px;\n" +
+    "    }\n" +
+    "\n" +
+    "    #list-clients{\n" +
+    "        position: relative;\n" +
+    "    }\n" +
+    "    #btn-config{\n" +
+    "        position: absolute;\n" +
+    "        top: 19px;\n" +
+    "        right: 10px;\n" +
+    "    }\n" +
+    "\n" +
+    "    .dropdown-menu {\n" +
+    "        right: 30px;\n" +
     "    }\n" +
     "\n" +
     "    #chatbox{\n" +
@@ -398,24 +458,45 @@ angular.module("home/home.tpl.html", []).run(["$templateCache", function($templa
     "    <!-- FACEBOOK INFORMATION -->\n" +
     "\n" +
     "    <div class=\"col-lg-4 col-md-4 col-sm-4\">\n" +
-    "        <div class=\"row\">\n" +
+    "        <div class=\"row\" id=\"list-clients\">\n" +
     "            <h3 class=\"text-primary\"><span class=\"fa fa-facebook\"></span> Facebook</h3>\n" +
-    "            <div class=\"input-group\">\n" +
-    "                    <!--<input type=\"text\" name=\"group-friends\" ng-model=\"searchText\" placeholder=\"add friends to this chat\"/>-->\n" +
-    "                <input type=\"text\" ng-model=\"groupName\" placeholder=\"Enter group name\"/>\n" +
-    "                <input type=\"button\" class=\"btn btn-default\" value=\"Done\" ng-click=\"subcribleGroup()\"/>\n" +
+    "            <button type=\"button\" class=\"btn btn-default btn-circle dropdown-toggle\" data-toggle=\"dropdown\" id=\"btn-config\"><i class=\"fa fa-cog\"></i></button>\n" +
+    "                    <ul class=\"dropdown-menu\" role=\"menu\">\n" +
+    "                        <li><a href=\"#\" ng-click=\"enableInputGroupName()\">Add friends to chat</a></li>\n" +
+    "                        <li><a href=\"#\">Another action</a></li>\n" +
+    "                        <li><a href=\"#\">Something else here</a></li>\n" +
+    "                        <li class=\"divider\"></li>\n" +
+    "                        <li><a href=\"#\">Separated link</a></li>\n" +
+    "                    </ul>\n" +
     "\n" +
-    "            </div>\n" +
+    "                    <!--<input type=\"text\" name=\"group-friends\" ng-model=\"searchText\" placeholder=\"add friends to this chat\"/>-->\n" +
+    "                <div class=\"input-group\"  ng-show=\"inputGroupname\">\n" +
+    "                    <input type=\"text\" class=\"form-control\" ng-model=\"groupName\" placeholder=\"Enter group name\">\n" +
+    "                    <span class=\"input-group-btn\">\n" +
+    "                        <button class=\"btn btn-default\" type=\"button\" ng-click=\"subscribeGroup()\">Go!</button>\n" +
+    "                    </span>\n" +
+    "                </div>\n" +
     "\n" +
     "        </div>\n" +
     "\n" +
     "        <div class=\"row\">\n" +
     "            <ul class=\"list-group\" ng-show=\"socketIds.length>0\">\n" +
+    "                <!--me-->\n" +
     "                <li class=\"list-group-item item-list-client me\">\n" +
     "                    <a><img src=\"http://graph.facebook.com/{{myProfile.facebook.id}}/picture?type=square\" alt=\"your avatar\"/></a>\n" +
     "                    <a class=\"\" href=\"#{{mySocketId}}\">{{myProfile.facebook.name}}</a>\n" +
     "                </li>\n" +
     "\n" +
+    "                <!--group-->\n" +
+    "                <li ng-repeat=\"group in groupId\" class=\"list-group-item item-list-client\" ng-class=\"{selected: group===selectedGroup}\" ng-click=\"changeSelectedGroup(group)\">\n" +
+    "                    <a class=\"\" href=\"#{{group}}\" ng-click=\"changeSelectedSocketid(group)\"><i class=\"fa fa-users\"></i></a>\n" +
+    "                    <a class=\"\" href=\"#{{group}}\" ng-click=\"changeSelectedSocketid(group)\">{{group}}</a>\n" +
+    "                    <span class=\"bubble-message\" ng-show=\"groups[group].newMess > 0\">{{groups[group].newMess}}</span>\n" +
+    "                    <input type=\"hidden\" value=\"{{groups[group].participants}}\"/>\n" +
+    "\n" +
+    "                </li>\n" +
+    "\n" +
+    "                <!--client-->\n" +
     "                <li ng-repeat=\"user in usersInfoArr | filter:searchText\" class=\"list-group-item item-list-client\" ng-if=\"user.socketId!==mySocketId\" ng-class=\"{selected: user.socketId===selectedSocketId}\" ng-click=\"changeSelectedSocketid(user.socketId)\">\n" +
     "                    <a class=\"\" href=\"#{{user.socketId}}\" ng-click=\"changeSelectedSocketid(user.socketId)\"><img src=\"http://graph.facebook.com/{{user.facebook.id}}/picture?type=square\" alt=\"your avatar\"/></a>\n" +
     "                    <a class=\"\" href=\"#{{user.socketId}}\" ng-click=\"changeSelectedSocketid(user.socketId)\">{{user.facebook.name}}</a>\n" +
@@ -432,17 +513,17 @@ angular.module("home/home.tpl.html", []).run(["$templateCache", function($templa
     "            <ul class=\"nav nav-tabs\">\n" +
     "                <li role=\"presentation\" class=\"active\">\n" +
     "                    <input type=\"hidden\" name=\"conversationId\" value=\"\"/>\n" +
-    "                    <a href=\"#main-tab\">Home</a>\n" +
+    "                    <a href=\"#main-tab\">Conversation</a>\n" +
     "                </li>\n" +
-    "                <li role=\"presentation\"><a href=\"\">Main</a></li>\n" +
-    "                <li role=\"presentation\" class=\"add-conversation-tab\" ng-click=\"addConversationTab()\"><a href=\"#\"><i class=\"fa fa-plus\"></i></a></li>\n" +
+    "                <li role=\"presentation\" class=\"add-conversation-tab\" ng-if=\"showConfigGroupBtn\"  ng-click=\"showParticipants()\"><a href=\"#\"><i class=\"fa fa-plus\"></i></a></li>\n" +
     "            </ul>\n" +
-    "            <ul id=\"\" class=\"tab-content\" scroll-glue>\n" +
+    "            <ul id=\"conversation\" class=\"tab-content\" scroll-glue>\n" +
     "                <div class=\"tab-pane active\" id=\"main-tab\">\n" +
     "                    <li ng-repeat=\"data in mainConversation\" class=\"list-group-item\">\n" +
     "                        <div class=\"media\">\n" +
     "                            <div class=\"media-left\">\n" +
-    "                                <a ng-if=\"!data.me\"><img src=\"http://graph.facebook.com/{{selectedClientProfile.facebook.id}}/picture?type=square\" alt=\"your avatar\"/></a>\n" +
+    "                                <a ng-if=\"!data.me\"><img src=\"http://graph.facebook.com/{{data.sender.facebook.id || data.sender}}/picture?type=square\" alt=\"your avatar\"/></a>\n" +
+    "\n" +
     "                            </div>\n" +
     "                            <div class=\"media-body\">\n" +
     "                                <h6 class=\"media-heading\" ng-if=\"!data.me\" class=\"conversation-client-name\">{{usersInfo[selectedSocketId].facebook.name}}<a class=\"anchorjs-link\" href=\"#media-heading\"><span class=\"anchorjs-icon\"></span></a></h6>\n" +
@@ -455,14 +536,14 @@ angular.module("home/home.tpl.html", []).run(["$templateCache", function($templa
     "        </div>\n" +
     "\n" +
     "        <div class=\"row\">\n" +
-    "            <li ng-repeat=\"user in usersInfoArr | filter:searchText\" class=\"list-group-item item-list-client\" ng-if=\"user.socketId!==mySocketId\" ng-class=\"{selected: user.socketId===selectedSocketId}\">\n" +
-    "                <a class=\"\" href=\"#{{user.socketId}}\"><img src=\"http://graph.facebook.com/{{user.facebook.id}}/picture?type=square\" alt=\"your avatar\"/></a>\n" +
-    "                <a class=\"\" href=\"#{{user.socketId}}\" >{{user.facebook.name}}</a>\n" +
-    "                <input type=\"checkbox\" id=\"participants\" name=\"participants\" value=\"{{user.socketId}}\"/>\n" +
-    "                <span class=\"bubble-message\" ng-show=\"user.newMess > 0\">{{user.newMess}}</span>\n" +
-    "                <input type=\"button\" value=\"Done\"/>\n" +
-    "\n" +
-    "            </li>\n" +
+    "           <ul class=\"add-participants\" ng-show=\"addparticipants\">\n" +
+    "               <li ng-repeat=\"user in usersInfoArr\" class=\"list-group-item item-list-client\" ng-if=\"user.socketId!==mySocketId\" ng-class=\"{selected: user.socketId===selectedSocketId}\">\n" +
+    "                   <a class=\"\" href=\"#{{user.socketId}}\"><img src=\"http://graph.facebook.com/{{user.facebook.id}}/picture?type=square\" alt=\"your avatar\"/></a>\n" +
+    "                   <a class=\"\" href=\"#{{user.socketId}}\" >{{user.facebook.name}}</a>\n" +
+    "                   <input type=\"checkbox\" id=\"participants\" name=\"participants\" value=\"{{user.socketId}}\"/>\n" +
+    "               </li>\n" +
+    "               <li><input type=\"button\" class=\"btn btn-default\" value=\"Done\" ng-click=\"inviteToGroup()\"/></li>\n" +
+    "           </ul>\n" +
     "            <span class=\"label label-warning\" ng-show=\"warning !== ''\">{{warning}}</span> <br/>\n" +
     "            <div class=\"input-group\">\n" +
     "                <input type=\"text\" class=\"form-control\" aria-label=\"Text input with segmented button dropdown\" ng-model=\"userInput\" ng-disabled=\"disabledButtonSend\" ng-keydown=\"onKeyDown($event)\" placeholder=\"type something here\" />\n" +
