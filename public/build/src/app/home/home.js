@@ -37,6 +37,15 @@ angular.module( 'chat.home', [
   });
 })
 
+    .filter('InArray', function () {
+        return function(array, value){
+            array = array || [];
+            value = value || '';
+            console.log('in the filer array: ', array);
+            console.log('in the filer value: ', value);
+            return array.indexOf(value) !== -1;
+        };
+    })
 
 /**
  * And of course we define a controller for our route.
@@ -57,7 +66,7 @@ angular.module( 'chat.home', [
         $scope.participants = [];
         $scope.searchParticipant = [];
         $scope.groupName = '';
-        $scope.groupId = [];
+        $scope.groupIds = [];
         $scope.groups = {};//all of the room which the use subscribe
         $scope.selectedGroup = '';
         $scope.showConfigGroupBtn = false;
@@ -169,6 +178,30 @@ angular.module( 'chat.home', [
             }
         });
 
+        socketConnector.listen('oldMessagesRoom', function (data) {
+            if(data.length <= 0){//if they have ever talked before
+                return ;
+            }
+
+
+            if(!$scope.groups[data.room].conversation){
+                $scope.groups[data.room].conversation = [];
+            }
+            $scope.groups[data.room].conversation = data.docs;
+
+            if($scope.selectedGroup === data.room){
+                $scope.mainConversation = $scope.groups[data.room].conversation;
+            }else{
+                if(!$scope.groups[data.room].newMess){//show message bubble if sender was selected
+                    $scope.groups[data.room].newMess = 1;
+                }else{
+                    $scope.groups[data.room].newMess ++;
+                }
+            }
+
+            $scope.$apply();
+        });
+
         //get list client from server
         socketConnector.listen('listClients', function (data) {
             $scope.socketIds = [];
@@ -192,6 +225,22 @@ angular.module( 'chat.home', [
 
             console.log('list socketIds has changed: ', $scope.socketIds);
             console.log('list client has changed: ', $scope.usersInfo);
+            $scope.$apply();
+        });
+
+
+        socketConnector.listen('listRooms', function (data) {
+            var tamp1 = [];
+            var tamp2 = {}
+            for(var i=0; i<data.length; i++){
+                tamp1[i] = data[i].name;
+                tamp2[tamp1[i]] = {};
+                tamp2[tamp1[i]].participants = data[i].participants;
+            }
+            console.log(' $scope.groupIds: ',  $scope.groupIds);
+            console.log(' $scope.groups: ',  $scope.groups);
+            $scope.groupIds = tamp1;
+            $scope.groups = tamp2;
             $scope.$apply();
         });
 
@@ -221,7 +270,7 @@ angular.module( 'chat.home', [
         socketConnector.listen('subscribe', function (data) {
             if(data.status === 'success'){
                 console.log('the room ', data.room, 'successfully');
-                $scope.groupId.push(data.room);
+                $scope.groupIds.push(data.room);
                 $scope.groups[data.room] = {};
                 $scope.groups[data.room].participants = data.participants;
 
@@ -231,6 +280,7 @@ angular.module( 'chat.home', [
 
         socketConnector.listen('updateRoom', function(data){
             $scope.groups[data.room].participants = data.participants;
+
             console.log('update room: ', data);
             console.log('participants in this room: ', data.participants);
 
@@ -243,7 +293,7 @@ angular.module( 'chat.home', [
         });
 
         socketConnector.listen('joinRoom', function (data) {
-            $scope.groupId.push(data.room);
+            $scope.groupIds.push(data.room);
             $scope.groups[data.room] = {};
             $scope.groups[data.room].participants = data.participants;
             console.log('join them room ', data.room);
@@ -261,6 +311,7 @@ angular.module( 'chat.home', [
             }
             $scope.warning = '';
             $scope.selectedGroup = '';
+            $scope.addparticipants = false;
             $scope.showConfigGroupBtn = false;
             $scope.disabledButtonSend = false;
             $scope.selectedSocketId = socketId;
@@ -295,6 +346,12 @@ angular.module( 'chat.home', [
             }
             $scope.groups[room].newMess = 0;
             $scope.mainConversation = $scope.groups[room].conversation;
+
+            if($scope.groups[room].conversation.length < maxOldMessages){ //===require the old messages
+                var room = room;
+                requestOldMessageGroup(room);
+                console.log('require the old messages');
+            }
         };
 
 
@@ -384,8 +441,8 @@ angular.module( 'chat.home', [
         };
 
         $scope.showParticipants = function () {
-            $scope.addparticipants = true;
-        }
+            $scope.addparticipants = !$scope.addparticipants;
+        };
 
         $scope.inviteToGroup = function () {
             if($scope.groupName !== ''){
@@ -398,11 +455,11 @@ angular.module( 'chat.home', [
                     room: $scope.groupName,
                     participants: participants
                 });
+                console.log(participants);
             }
 
             $scope.addparticipants = false;
 
-            console.log(participants);
         };
 
 
@@ -419,15 +476,24 @@ angular.module( 'chat.home', [
 
         $scope.enableInputGroupName = function () {
             $scope.inputGroupname = true;
-        }
-
-
-        var requestOldMessage = function(myFbId, receiverFbId){
-                socketConnector.sendMessage('requestOldMessages', {
-                    myFbId: myFbId,
-                    receiverFbId: receiverFbId
-                });
         };
+
+        $scope.close = function () {
+            $scope.inputGroupname = false;
+        };
+
+
+        var requestOldMessage = function(myFbId, receiverFbId, type){
+            socketConnector.sendMessage('requestOldMessages', {
+                myFbId: myFbId,
+                receiverFbId: receiverFbId
+            });
+
+        };
+
+        var requestOldMessageGroup = function (room) {
+            socketConnector.sendMessage('requestOldMessagesRoom', {room: room});
+        }
 
         var notifycation = function (avatar, mess, type) {
             toastr[type](avatar, mess);

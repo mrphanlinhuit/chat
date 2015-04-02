@@ -434,7 +434,7 @@ angular.module("home/home.tpl.html", []).run(["$templateCache", function($templa
     "    }\n" +
     "\n" +
     "    .dropdown-menu {\n" +
-    "        right: 30px;\n" +
+    "        margin-right: 10px;\n" +
     "    }\n" +
     "\n" +
     "    #chatbox{\n" +
@@ -461,12 +461,9 @@ angular.module("home/home.tpl.html", []).run(["$templateCache", function($templa
     "        <div class=\"row\" id=\"list-clients\">\n" +
     "            <h3 class=\"text-primary\"><span class=\"fa fa-facebook\"></span> Facebook</h3>\n" +
     "            <button type=\"button\" class=\"btn btn-default btn-circle dropdown-toggle\" data-toggle=\"dropdown\" id=\"btn-config\"><i class=\"fa fa-cog\"></i></button>\n" +
-    "                    <ul class=\"dropdown-menu\" role=\"menu\">\n" +
-    "                        <li><a href=\"#\" ng-click=\"enableInputGroupName()\">Add friends to chat</a></li>\n" +
-    "                        <li><a href=\"#\">Another action</a></li>\n" +
-    "                        <li><a href=\"#\">Something else here</a></li>\n" +
-    "                        <li class=\"divider\"></li>\n" +
-    "                        <li><a href=\"#\">Separated link</a></li>\n" +
+    "                    <ul class=\"dropdown-menu pull-right\" role=\"menu\">\n" +
+    "                        <li><a href=\"#\" ng-click=\"enableInputGroupName()\">Add New Group</a></li>\n" +
+    "                        <li><a href=\"#\" ng-click=\"close()\">Close</a></li>\n" +
     "                    </ul>\n" +
     "\n" +
     "                    <!--<input type=\"text\" name=\"group-friends\" ng-model=\"searchText\" placeholder=\"add friends to this chat\"/>-->\n" +
@@ -488,10 +485,10 @@ angular.module("home/home.tpl.html", []).run(["$templateCache", function($templa
     "                </li>\n" +
     "\n" +
     "                <!--group-->\n" +
-    "                <li ng-repeat=\"group in groupId\" class=\"list-group-item item-list-client\" ng-class=\"{selected: group===selectedGroup}\" ng-click=\"changeSelectedGroup(group)\">\n" +
-    "                    <a class=\"\" href=\"#{{group}}\" ng-click=\"changeSelectedSocketid(group)\"><i class=\"fa fa-users\"></i></a>\n" +
-    "                    <a class=\"\" href=\"#{{group}}\" ng-click=\"changeSelectedSocketid(group)\">{{group}}</a>\n" +
-    "                    <span class=\"bubble-message\" ng-show=\"groups[group].newMess > 0\">{{groups[group].newMess}}</span>\n" +
+    "                <li ng-repeat=\"group in groupIds\" class=\"list-group-item item-list-client\" ng-class=\"{selected: group===selectedGroup}\" ng-click=\"changeSelectedGroup(group)\">\n" +
+    "                    <a class=\"\" href=\"#{{group}}\" ng-click=\"changeSelectedGroup(group)\"><i class=\"fa fa-users\"></i></a>\n" +
+    "                    <a class=\"\" href=\"#{{group}}\" ng-click=\"changeSelectedGroup(group)\" ng-bind=\"group\"></a>\n" +
+    "                    <span class=\"bubble-message\" ng-show=\"groups[group].newMess > 0\" ng-bind=\"groups[group].newMess\"></span>\n" +
     "                    <input type=\"hidden\" value=\"{{groups[group].participants}}\"/>\n" +
     "\n" +
     "                </li>\n" +
@@ -540,7 +537,7 @@ angular.module("home/home.tpl.html", []).run(["$templateCache", function($templa
     "               <li ng-repeat=\"user in usersInfoArr\" class=\"list-group-item item-list-client\" ng-if=\"user.socketId!==mySocketId\" ng-class=\"{selected: user.socketId===selectedSocketId}\">\n" +
     "                   <a class=\"\" href=\"#{{user.socketId}}\"><img src=\"http://graph.facebook.com/{{user.facebook.id}}/picture?type=square\" alt=\"your avatar\"/></a>\n" +
     "                   <a class=\"\" href=\"#{{user.socketId}}\" >{{user.facebook.name}}</a>\n" +
-    "                   <input type=\"checkbox\" id=\"participants\" name=\"participants\" value=\"{{user.socketId}}\"/>\n" +
+    "                   <input type=\"checkbox\" id=\"participants\" name=\"participants\" ng-checked=\"groups[selectedGroup].participants|InArray:user.socketId\" value=\"{{user.socketId}}\"/>\n" +
     "               </li>\n" +
     "               <li><input type=\"button\" class=\"btn btn-default\" value=\"Done\" ng-click=\"inviteToGroup()\"/></li>\n" +
     "           </ul>\n" +
